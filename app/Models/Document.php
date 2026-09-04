@@ -28,7 +28,15 @@ class Document extends Model
 
     protected $fillable = [
         'work_id', 'phase_id', 'title', 'description', 'visibility', 'status', 'created_by',
+        'physical_location_id', 'physical_code', 'physical_stored_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'physical_stored_at' => 'date',
+        ];
+    }
 
     public function work(): BelongsTo
     {
@@ -48,6 +56,11 @@ class Document extends Model
     public function files(): HasMany
     {
         return $this->hasMany(DocumentFile::class);
+    }
+
+    public function physicalLocation(): BelongsTo
+    {
+        return $this->belongsTo(PhysicalLocation::class, 'physical_location_id');
     }
 
     public function tags(): MorphToMany

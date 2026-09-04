@@ -51,4 +51,15 @@ Route::middleware(['auth', 'can:document.view'])->prefix('admin')->name('admin.'
         ->name('works.documents');
 });
 
+Route::middleware(['auth', 'can:archive.view'])->prefix('admin')->name('admin.')->group(function () {
+    Volt::route('physical-locations', 'admin.physical-locations.index')
+        ->name('physical-locations.index');
+
+    Volt::route('physical-locations/{location}', 'admin.physical-locations.show')
+        ->name('physical-locations.show');
+
+    Volt::route('archive', 'admin.archive.index')
+        ->name('archive.index');
+});
+
 require __DIR__.'/auth.php';

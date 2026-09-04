@@ -63,6 +63,16 @@ new class extends Component
                             {{ __('Tags') }}
                         </x-nav-link>
                     @endcan
+
+                    @can('archive.view')
+                        <x-nav-link :href="route('admin.physical-locations.index')" :active="request()->routeIs('admin.physical-locations.*')" wire:navigate>
+                            {{ __('Lokasi Fisik') }}
+                        </x-nav-link>
+
+                        <x-nav-link :href="route('admin.archive.index')" :active="request()->routeIs('admin.archive.index')" wire:navigate>
+                            {{ __('Penempatan Arsip') }}
+                        </x-nav-link>
+                    @endcan
                 </div>
             </div>
 
@@ -142,6 +152,16 @@ new class extends Component
 
                 <x-responsive-nav-link :href="route('admin.tags.index')" :active="request()->routeIs('admin.tags.index')" wire:navigate>
                     {{ __('Tags') }}
+                </x-responsive-nav-link>
+            @endcan
+
+            @can('archive.view')
+                <x-responsive-nav-link :href="route('admin.physical-locations.index')" :active="request()->routeIs('admin.physical-locations.*')" wire:navigate>
+                    {{ __('Lokasi Fisik') }}
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="route('admin.archive.index')" :active="request()->routeIs('admin.archive.index')" wire:navigate>
+                    {{ __('Penempatan Arsip') }}
                 </x-responsive-nav-link>
             @endcan
         </div>
