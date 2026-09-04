@@ -15,6 +15,7 @@ class WorkResource extends JsonResource
             'code' => $this->code,
             'name' => $this->name,
             'package_name' => $this->package_name,
+            'cover_url' => $this->coverUrl(),
             'work_type' => $this->whenLoaded('workType', fn () => $this->workType?->name),
             'fiscal_year' => $this->fiscal_year,
             'funding_source' => $this->funding_source,

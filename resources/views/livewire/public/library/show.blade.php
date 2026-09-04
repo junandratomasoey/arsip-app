@@ -117,14 +117,21 @@ new #[Layout('layouts.public')] class extends Component
     @endif
 
     <div class="bg-white shadow-sm rounded-lg p-6">
-        <div class="flex items-start justify-between gap-4">
-            <h1 class="text-lg font-semibold text-gray-900">{{ $document->title }}</h1>
-            <span class="shrink-0 text-[10px] font-semibold uppercase tracking-wide rounded px-1.5 py-0.5 bg-emerald-100 text-emerald-700">Publik</span>
-        </div>
+        <div class="flex items-start gap-4">
+            @if ($document->work->coverUrl())
+                <img src="{{ $document->work->coverUrl() }}" alt="" class="w-24 h-24 rounded-md object-cover shrink-0 border border-gray-100">
+            @endif
+            <div class="flex-1">
+                <div class="flex items-start justify-between gap-4">
+                    <h1 class="text-lg font-semibold text-gray-900">{{ $document->title }}</h1>
+                    <span class="shrink-0 text-[10px] font-semibold uppercase tracking-wide rounded px-1.5 py-0.5 bg-emerald-100 text-emerald-700">Publik</span>
+                </div>
 
-        @if ($document->description)
-            <p class="mt-2 text-sm text-gray-600">{{ $document->description }}</p>
-        @endif
+                @if ($document->description)
+                    <p class="mt-2 text-sm text-gray-600">{{ $document->description }}</p>
+                @endif
+            </div>
+        </div>
 
         <dl class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
             <div>

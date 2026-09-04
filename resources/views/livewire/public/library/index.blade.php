@@ -55,8 +55,13 @@ new #[Layout('layouts.public')] class extends Component
 
 <div class="space-y-4">
     @forelse ($documents as $document)
-        <a href="{{ route('public.library.show', $document) }}" wire:navigate class="block bg-white shadow-sm rounded-lg p-5 hover:shadow-md transition-shadow">
-            <div class="flex items-start justify-between gap-4">
+        <a href="{{ route('public.library.show', $document) }}" wire:navigate class="flex gap-4 bg-white shadow-sm rounded-lg p-5 hover:shadow-md transition-shadow">
+            @if ($document->work->coverUrl())
+                <img src="{{ $document->work->coverUrl() }}" alt="" class="w-16 h-16 rounded-md object-cover shrink-0 border border-gray-100">
+            @else
+                <div class="w-16 h-16 rounded-md bg-gray-100 shrink-0 flex items-center justify-center text-gray-300 text-xs">Tanpa cover</div>
+            @endif
+            <div class="flex-1 flex items-start justify-between gap-4">
                 <div>
                     <h2 class="font-medium text-gray-900">{{ $document->title }}</h2>
                     <p class="mt-1 text-xs text-gray-400">{{ $document->work->code }} - {{ $document->work->name }}</p>

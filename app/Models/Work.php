@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Data paket pekerjaan. Lihat Bab IV.4 dokumen perancangan.
@@ -20,7 +21,7 @@ class Work extends Model
     use HasFactory, HasUuids, SoftDeletes;
 
     protected $fillable = [
-        'code', 'name', 'package_name', 'work_type_id', 'fiscal_year', 'funding_source',
+        'code', 'name', 'package_name', 'cover_path', 'work_type_id', 'fiscal_year', 'funding_source',
         'province', 'regency', 'district', 'village', 'location_description',
         'contract_number', 'contract_date', 'contract_value',
         'spmk_number', 'spmk_date', 'bast_number', 'bast_date',
@@ -90,5 +91,14 @@ class Work extends Model
     public function tags(): MorphToMany
     {
         return $this->morphToMany(Tag::class, 'taggable');
+    }
+
+    /**
+     * URL publik cover/sampul, atau null kalau belum ada - dipakai di
+     * kartu & detail Perpustakaan Digital Publik.
+     */
+    public function coverUrl(): ?string
+    {
+        return $this->cover_path ? Storage::disk('public')->url($this->cover_path) : null;
     }
 }

@@ -7,16 +7,23 @@ use App\Models\User;
 use App\Models\Work;
 use App\Models\WorkStatus;
 use App\Models\WorkType;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
+use Livewire\WithFileUploads;
 
 new #[Layout('layouts.app')] class extends Component
 {
+    use WithFileUploads;
+
     public ?Work $work = null;
 
     public string $code = '';
     public string $name = '';
     public string $packageName = '';
+    public $coverUpload = null;
+    public ?string $existingCoverPath = null;
+    public bool $removeCover = false;
     public ?int $workTypeId = null;
     public ?int $fiscalYear = null;
     public string $fundingSource = '';
@@ -69,6 +76,7 @@ new #[Layout('layouts.app')] class extends Component
             $this->code = $this->work->code;
             $this->name = $this->work->name;
             $this->packageName = (string) $this->work->package_name;
+            $this->existingCoverPath = $this->work->cover_path;
             $this->workTypeId = $this->work->work_type_id;
             $this->fiscalYear = $this->work->fiscal_year;
             $this->fundingSource = (string) $this->work->funding_source;
@@ -128,11 +136,23 @@ new #[Layout('layouts.app')] class extends Component
             ->map(fn ($t) => ['id' => $t->id, 'name' => $t->name])->all();
     }
 
+    public function markRemoveCover(): void
+    {
+        $this->coverUpload = null;
+        $this->removeCover = true;
+    }
+
+    public function undoRemoveCover(): void
+    {
+        $this->removeCover = false;
+    }
+
     public function save(): void
     {
         $this->validate([
             'code' => 'required|string|max:255|unique:works,code,' . ($this->work?->id ?? 'NULL') . ',id',
             'name' => 'required|string|max:255',
+            'coverUpload' => 'nullable|image|max:2048',
             'workTypeId' => 'nullable|exists:work_types,id',
             'fiscalYear' => 'nullable|integer|min:2000|max:2100',
             'contractDate' => 'nullable|date',
@@ -149,10 +169,24 @@ new #[Layout('layouts.app')] class extends Component
             'workStatusId' => 'nullable|exists:work_statuses,id',
         ]);
 
+        $coverPath = $this->existingCoverPath;
+
+        if ($this->coverUpload) {
+            if ($coverPath) {
+                Storage::disk('public')->delete($coverPath);
+            }
+
+            $coverPath = $this->coverUpload->store('covers', 'public');
+        } elseif ($this->removeCover && $coverPath) {
+            Storage::disk('public')->delete($coverPath);
+            $coverPath = null;
+        }
+
         $data = [
             'code' => $this->code,
             'name' => $this->name,
             'package_name' => $this->packageName !== '' ? $this->packageName : null,
+            'cover_path' => $coverPath,
             'work_type_id' => $this->workTypeId,
             'fiscal_year' => $this->fiscalYear,
             'funding_source' => $this->fundingSource !== '' ? $this->fundingSource : null,
@@ -236,6 +270,28 @@ new #[Layout('layouts.app')] class extends Component
                     <div class="sm:col-span-2">
                         <x-input-label for="packageName" value="Nama Paket" />
                         <x-text-input wire:model="packageName" id="packageName" type="text" class="mt-1 block w-full" />
+                    </div>
+                    <div class="sm:col-span-2">
+                        <x-input-label for="coverUpload" value="Cover / Sampul" />
+                        <p class="text-xs text-gray-400 mb-2">Ditampilkan di Perpustakaan Digital Publik. Format gambar, maks 2MB.</p>
+
+                        @if ($coverUpload)
+                            <div class="mb-2 flex items-center gap-3">
+                                <img src="{{ $coverUpload->temporaryUrl() }}" class="h-24 w-24 object-cover rounded-md border border-gray-200">
+                                <span class="text-xs text-gray-500">Cover baru (belum disimpan)</span>
+                            </div>
+                        @elseif ($existingCoverPath && ! $removeCover)
+                            <div class="mb-2 flex items-center gap-3">
+                                <img src="{{ Illuminate\Support\Facades\Storage::disk('public')->url($existingCoverPath) }}" class="h-24 w-24 object-cover rounded-md border border-gray-200">
+                                <button type="button" wire:click="markRemoveCover" class="text-xs text-red-600 hover:underline">Hapus cover</button>
+                            </div>
+                        @elseif ($removeCover)
+                            <p class="text-xs text-amber-600 mb-2">Cover akan dihapus saat disimpan. <button type="button" wire:click="undoRemoveCover" class="underline">Batalkan</button></p>
+                        @endif
+
+                        <input type="file" wire:model="coverUpload" id="coverUpload" accept="image/*" class="block w-full text-sm text-gray-600">
+                        <div wire:loading wire:target="coverUpload" class="text-xs text-gray-400 mt-1">Mengunggah...</div>
+                        <x-input-error :messages="$errors->get('coverUpload')" class="mt-1" />
                     </div>
                     <div>
                         <x-input-label for="workTypeId" value="Jenis Pekerjaan" />
