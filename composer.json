@@ -9,6 +9,7 @@
         "php": "^8.2",
         "clickbar/laravel-magellan": "^2.0",
         "laravel/framework": "^11.31",
+        "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
         "livewire/livewire": "^3.6.4",
         "livewire/volt": "^1.7.0",

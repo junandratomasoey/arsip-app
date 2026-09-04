@@ -27,6 +27,7 @@ new #[Layout('layouts.app')] class extends Component
     public string $visibility = 'internal';
 
     public ?string $confirmingDeleteDocumentId = null;
+    public string $deleteDocumentError = '';
 
     public ?string $addFileToDocumentId = null;
     public string $newFileLabel = '';
@@ -129,11 +130,13 @@ new #[Layout('layouts.app')] class extends Component
     {
         abort_unless(auth()->user()->can('document.delete'), 403);
         $this->confirmingDeleteDocumentId = $id;
+        $this->deleteDocumentError = '';
     }
 
     public function cancelDeleteDocument(): void
     {
         $this->confirmingDeleteDocumentId = null;
+        $this->deleteDocumentError = '';
     }
 
     public function deleteDocument(): void
@@ -141,6 +144,12 @@ new #[Layout('layouts.app')] class extends Component
         abort_unless(auth()->user()->can('document.delete'), 403);
 
         $document = Document::where('work_id', $this->work->id)->findOrFail($this->confirmingDeleteDocumentId);
+
+        if ($document->loans()->whereIn('status', [Loan::STATUS_PENDING, Loan::STATUS_APPROVED])->exists()) {
+            $this->deleteDocumentError = 'Tidak bisa menghapus dokumen yang masih punya peminjaman aktif (menunggu/disetujui). Selesaikan atau tolak peminjamannya dulu.';
+
+            return;
+        }
 
         AuditLog::record('document.deleted', $document, 'Hapus dokumen: ' . $document->title, [
             'work' => $this->work->code . ' - ' . $this->work->name,
@@ -593,6 +602,10 @@ new #[Layout('layouts.app')] class extends Component
         <div class="relative mb-6 bg-white rounded-lg overflow-hidden shadow-xl sm:max-w-md sm:mx-auto p-6">
             <h3 class="text-lg font-medium text-gray-900">Hapus dokumen ini?</h3>
             <p class="mt-2 text-sm text-gray-500">Dokumen akan dipindahkan ke sampah (soft delete) dan bisa dipulihkan lewat database bila diperlukan.</p>
+
+            @if ($deleteDocumentError)
+                <p class="mt-2 text-sm text-red-600">{{ $deleteDocumentError }}</p>
+            @endif
 
             <div class="mt-6 flex justify-end gap-3">
                 <button type="button" wire:click="cancelDeleteDocument" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50">

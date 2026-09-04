@@ -199,8 +199,15 @@ new #[Layout('layouts.app')] class extends Component
                         @forelse ($loans as $loan)
                             <tr>
                                 <td class="px-4 py-2 text-gray-900 align-top">
-                                    {{ $loan->document->title }}
-                                    <p class="text-xs text-gray-400">{{ $loan->document->work->code }} - {{ $loan->document->work->name }}</p>
+                                    @if ($loan->document)
+                                        {{ $loan->document->title }}
+                                        @if ($loan->document->trashed())
+                                            <span class="text-[10px] font-semibold uppercase tracking-wide rounded px-1.5 py-0.5 bg-gray-200 text-gray-500 ml-1">Terhapus</span>
+                                        @endif
+                                        <p class="text-xs text-gray-400">{{ $loan->document->work->code ?? '-' }} - {{ $loan->document->work->name ?? '-' }}</p>
+                                    @else
+                                        <span class="italic text-gray-400">(dokumen telah dihapus)</span>
+                                    @endif
                                 </td>
                                 <td class="px-4 py-2 text-gray-500 align-top">
                                     {{ $loan->borrower_name }}

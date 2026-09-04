@@ -53,9 +53,15 @@ class Loan extends Model
         ];
     }
 
+    /**
+     * withTrashed() supaya riwayat peminjaman tetap bisa ditampilkan
+     * (mis. di antrian admin/loans) walau dokumennya sudah dihapus
+     * (soft delete) belakangan - tanpa ini $loan->document jadi null dan
+     * merusak tampilan yang mengasumsikan dokumen selalu ada.
+     */
     public function document(): BelongsTo
     {
-        return $this->belongsTo(Document::class);
+        return $this->belongsTo(Document::class)->withTrashed();
     }
 
     public function requester(): BelongsTo
