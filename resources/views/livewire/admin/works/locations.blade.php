@@ -170,7 +170,7 @@ new #[Layout('layouts.app')] class extends Component
 
         @can('work.update')
             <div class="flex justify-end">
-                <button type="button" wire:click="createNew" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                <button type="button" wire:click="createNew" class="inline-flex items-center px-4 py-2 bg-pu-navy border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-pu-navy-700">
                     + Tambah Titik
                 </button>
             </div>
@@ -206,7 +206,7 @@ new #[Layout('layouts.app')] class extends Component
                             <td class="px-4 py-2 text-gray-500">{{ $location['description'] ?: '-' }}</td>
                             <td class="px-4 py-2 text-right space-x-3 text-xs whitespace-nowrap">
                                 @can('work.update')
-                                    <button type="button" wire:click="edit('{{ $location['id'] }}')" class="text-indigo-600 hover:underline">ubah</button>
+                                    <button type="button" wire:click="edit('{{ $location['id'] }}')" class="text-pu-navy-600 hover:underline">ubah</button>
                                     <button type="button" wire:click="confirmDelete('{{ $location['id'] }}')" class="text-red-600 hover:underline">hapus</button>
                                 @endcan
                             </td>
@@ -249,7 +249,7 @@ new #[Layout('layouts.app')] class extends Component
                     </div>
                     <div class="sm:col-span-2">
                         <x-input-label for="description" value="Keterangan" />
-                        <textarea wire:model="description" id="description" rows="2" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"></textarea>
+                        <textarea wire:model="description" id="description" rows="2" class="mt-1 block w-full border-gray-300 focus:border-pu-navy-500 focus:ring-pu-navy-500 rounded-md shadow-sm"></textarea>
                     </div>
                 </div>
 
@@ -275,7 +275,7 @@ new #[Layout('layouts.app')] class extends Component
                     <button type="button" wire:click="closeForm" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50">
                         Batal
                     </button>
-                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-pu-navy border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-pu-navy-700">
                         Simpan
                     </button>
                 </div>

@@ -198,7 +198,7 @@ new #[Layout('layouts.app')] class extends Component
     <div class="py-12">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8 space-y-4">
             <div class="flex justify-end">
-                <button type="button" wire:click="createNew" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                <button type="button" wire:click="createNew" class="inline-flex items-center px-4 py-2 bg-pu-navy border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-pu-navy-700">
                     + Unit Baru
                 </button>
             </div>
@@ -233,7 +233,7 @@ new #[Layout('layouts.app')] class extends Component
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <x-input-label for="type" value="Tipe" />
-                                <select wire:model="type" id="type" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                <select wire:model="type" id="type" class="mt-1 block w-full border-gray-300 focus:border-pu-navy-500 focus:ring-pu-navy-500 rounded-md shadow-sm">
                                     @foreach ($unitTypes as $value => $label)
                                         <option value="{{ $value }}">{{ $label }}</option>
                                     @endforeach
@@ -250,7 +250,7 @@ new #[Layout('layouts.app')] class extends Component
 
                         <div>
                             <x-input-label for="parentId" value="Induk Unit" />
-                            <select wire:model="parentId" id="parentId" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                            <select wire:model="parentId" id="parentId" class="mt-1 block w-full border-gray-300 focus:border-pu-navy-500 focus:ring-pu-navy-500 rounded-md shadow-sm">
                                 <option value="">— Tidak ada (unit tingkat teratas) —</option>
                                 @foreach ($this->flatOptions() as $option)
                                     <option value="{{ $option['id'] }}">{{ $option['label'] }}</option>
@@ -268,7 +268,7 @@ new #[Layout('layouts.app')] class extends Component
 
                             <div class="flex items-end pb-1">
                                 <label class="inline-flex items-center gap-2">
-                                    <input type="checkbox" wire:model="isActive" class="rounded border-gray-300 text-indigo-600 shadow-sm">
+                                    <input type="checkbox" wire:model="isActive" class="rounded border-gray-300 text-pu-navy-600 shadow-sm">
                                     <span class="text-sm text-gray-700">Aktif</span>
                                 </label>
                             </div>
@@ -279,7 +279,7 @@ new #[Layout('layouts.app')] class extends Component
                         <button type="button" wire:click="closeForm" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50">
                             Batal
                         </button>
-                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-pu-navy border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-pu-navy-700">
                             Simpan
                         </button>
                     </div>

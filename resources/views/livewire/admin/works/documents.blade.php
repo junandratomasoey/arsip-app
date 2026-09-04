@@ -334,7 +334,7 @@ new #[Layout('layouts.app')] class extends Component
 
         @can('document.create')
             <div class="flex justify-end">
-                <button type="button" wire:click="createDocument" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                <button type="button" wire:click="createDocument" class="inline-flex items-center px-4 py-2 bg-pu-navy border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-pu-navy-700">
                     + Tambah Dokumen
                 </button>
             </div>
@@ -385,10 +385,10 @@ new #[Layout('layouts.app')] class extends Component
                                 <button type="button" wire:click="cancelLoanRequest('{{ $myLoan->id }}')" class="text-red-600 hover:underline">batalkan</button>
                             @endif
                         @else
-                            <button type="button" wire:click="startBorrow('{{ $document->id }}')" class="text-indigo-600 hover:underline">pinjam</button>
+                            <button type="button" wire:click="startBorrow('{{ $document->id }}')" class="text-pu-navy-600 hover:underline">pinjam</button>
                         @endif
                         @can('document.update')
-                            <button type="button" wire:click="startAddFile('{{ $document->id }}')" class="text-indigo-600 hover:underline">+ file</button>
+                            <button type="button" wire:click="startAddFile('{{ $document->id }}')" class="text-pu-navy-600 hover:underline">+ file</button>
                         @endcan
                         @can('document.delete')
                             <button type="button" wire:click="confirmDeleteDocument('{{ $document->id }}')" class="text-red-600 hover:underline">hapus</button>
@@ -415,11 +415,11 @@ new #[Layout('layouts.app')] class extends Component
                                 <div class="flex items-center gap-3 text-xs">
                                     @if ($file->currentVersion)
                                         @can('document.download')
-                                            <button type="button" wire:click="downloadVersion('{{ $file->currentVersion->id }}')" class="text-indigo-600 hover:underline">unduh</button>
+                                            <button type="button" wire:click="downloadVersion('{{ $file->currentVersion->id }}')" class="text-pu-navy-600 hover:underline">unduh</button>
                                         @endcan
                                     @endif
                                     @can('document.update')
-                                        <button type="button" wire:click="startUpload('{{ $file->id }}')" class="text-indigo-600 hover:underline">unggah versi baru</button>
+                                        <button type="button" wire:click="startUpload('{{ $file->id }}')" class="text-pu-navy-600 hover:underline">unggah versi baru</button>
                                     @endcan
                                     @if ($file->versions->count() > 1)
                                         <button type="button" wire:click="toggleFileHistory('{{ $file->id }}')" class="text-gray-500 hover:underline">
@@ -454,7 +454,7 @@ new #[Layout('layouts.app')] class extends Component
                                                 </td>
                                                 <td class="px-3 py-1.5 text-right">
                                                     @can('document.download')
-                                                        <button type="button" wire:click="downloadVersion('{{ $version->id }}')" class="text-indigo-600 hover:underline">unduh</button>
+                                                        <button type="button" wire:click="downloadVersion('{{ $version->id }}')" class="text-pu-navy-600 hover:underline">unduh</button>
                                                     @endcan
                                                 </td>
                                             </tr>
@@ -493,7 +493,7 @@ new #[Layout('layouts.app')] class extends Component
 
                     <div>
                         <x-input-label for="description" value="Deskripsi" />
-                        <textarea wire:model="description" id="description" rows="2" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"></textarea>
+                        <textarea wire:model="description" id="description" rows="2" class="mt-1 block w-full border-gray-300 focus:border-pu-navy-500 focus:ring-pu-navy-500 rounded-md shadow-sm"></textarea>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
@@ -524,7 +524,7 @@ new #[Layout('layouts.app')] class extends Component
                     <button type="button" wire:click="closeDocumentForm" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50">
                         Batal
                     </button>
-                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-pu-navy border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-pu-navy-700">
                         Simpan
                     </button>
                 </div>
@@ -551,7 +551,7 @@ new #[Layout('layouts.app')] class extends Component
                     <button type="button" wire:click="cancelAddFile" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50">
                         Batal
                     </button>
-                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-pu-navy border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-pu-navy-700">
                         Simpan
                     </button>
                 </div>
@@ -578,7 +578,7 @@ new #[Layout('layouts.app')] class extends Component
 
                     <div>
                         <x-input-label for="uploadNotes" value="Catatan Versi (opsional)" />
-                        <textarea wire:model="uploadNotes" id="uploadNotes" rows="2" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"></textarea>
+                        <textarea wire:model="uploadNotes" id="uploadNotes" rows="2" class="mt-1 block w-full border-gray-300 focus:border-pu-navy-500 focus:ring-pu-navy-500 rounded-md shadow-sm"></textarea>
                     </div>
                 </div>
 
@@ -586,7 +586,7 @@ new #[Layout('layouts.app')] class extends Component
                     <button type="button" wire:click="cancelUpload" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50">
                         Batal
                     </button>
-                    <button type="submit" wire:loading.attr="disabled" wire:target="saveUpload" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 disabled:opacity-50">
+                    <button type="submit" wire:loading.attr="disabled" wire:target="saveUpload" class="inline-flex items-center px-4 py-2 bg-pu-navy border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-pu-navy-700 disabled:opacity-50">
                         Simpan
                     </button>
                 </div>
@@ -648,7 +648,7 @@ new #[Layout('layouts.app')] class extends Component
 
                     <div>
                         <x-input-label for="purpose" value="Keperluan Peminjaman" />
-                        <textarea wire:model="purpose" id="purpose" rows="3" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"></textarea>
+                        <textarea wire:model="purpose" id="purpose" rows="3" class="mt-1 block w-full border-gray-300 focus:border-pu-navy-500 focus:ring-pu-navy-500 rounded-md shadow-sm"></textarea>
                         <x-input-error :messages="$errors->get('purpose')" class="mt-1" />
                     </div>
                 </div>
@@ -657,7 +657,7 @@ new #[Layout('layouts.app')] class extends Component
                     <button type="button" wire:click="cancelBorrow" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50">
                         Batal
                     </button>
-                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-pu-navy border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-pu-navy-700">
                         Kirim Pengajuan
                     </button>
                 </div>

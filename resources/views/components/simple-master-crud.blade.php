@@ -14,7 +14,7 @@
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-4">
             <div class="flex justify-end">
-                <button type="button" wire:click="createNew" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                <button type="button" wire:click="createNew" class="inline-flex items-center px-4 py-2 bg-pu-navy border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-pu-navy-700">
                     + Tambah
                 </button>
             </div>
@@ -41,7 +41,7 @@
                                     </span>
                                 </td>
                                 <td class="px-4 py-2 text-right space-x-3 text-xs">
-                                    <button type="button" wire:click="edit({{ $item['id'] }})" class="text-indigo-600 hover:underline">ubah</button>
+                                    <button type="button" wire:click="edit({{ $item['id'] }})" class="text-pu-navy-600 hover:underline">ubah</button>
                                     <button type="button" wire:click="toggleActive({{ $item['id'] }})" class="text-amber-600 hover:underline">{{ $item['is_active'] ? 'nonaktifkan' : 'aktifkan' }}</button>
                                     <button type="button" wire:click="confirmDelete({{ $item['id'] }})" class="text-red-600 hover:underline">hapus</button>
                                 </td>
@@ -88,7 +88,7 @@
                         </div>
 
                         <label class="inline-flex items-center gap-2">
-                            <input type="checkbox" wire:model="isActive" class="rounded border-gray-300 text-indigo-600 shadow-sm">
+                            <input type="checkbox" wire:model="isActive" class="rounded border-gray-300 text-pu-navy-600 shadow-sm">
                             <span class="text-sm text-gray-700">Aktif</span>
                         </label>
                     </div>
@@ -97,7 +97,7 @@
                         <button type="button" wire:click="closeForm" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50">
                             Batal
                         </button>
-                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-pu-navy border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-pu-navy-700">
                             Simpan
                         </button>
                     </div>

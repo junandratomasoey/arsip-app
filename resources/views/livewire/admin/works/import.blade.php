@@ -339,7 +339,7 @@ new #[Layout('layouts.app')] class extends Component
                     Impor selesai: <span class="font-semibold text-green-700">{{ $importedCount }} pekerjaan berhasil dibuat</span>@if ($skippedCount > 0), <span class="font-semibold text-amber-700">{{ $skippedCount }} baris dilewati</span> (duplikat/error)@endif.
                 </p>
                 <div class="mt-4 flex gap-3">
-                    <a href="{{ route('admin.works.index') }}" wire:navigate class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                    <a href="{{ route('admin.works.index') }}" wire:navigate class="inline-flex items-center px-4 py-2 bg-pu-navy border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-pu-navy-700">
                         Lihat Daftar Pekerjaan
                     </a>
                     <button type="button" wire:click="startOver" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50">
@@ -370,7 +370,7 @@ new #[Layout('layouts.app')] class extends Component
                 @endif
 
                 <div class="mt-4">
-                    <button type="button" wire:click="parse" wire:loading.attr="disabled" wire:target="parse" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 disabled:opacity-50">
+                    <button type="button" wire:click="parse" wire:loading.attr="disabled" wire:target="parse" class="inline-flex items-center px-4 py-2 bg-pu-navy border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-pu-navy-700 disabled:opacity-50">
                         <span wire:loading.remove wire:target="parse">Baca File</span>
                         <span wire:loading wire:target="parse">Memproses...</span>
                     </button>
@@ -439,7 +439,7 @@ new #[Layout('layouts.app')] class extends Component
                     </div>
 
                     <div class="mt-6 flex gap-3">
-                        <button type="button" wire:click="import" wire:loading.attr="disabled" wire:target="import" @disabled($validCount === 0) class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 disabled:opacity-50">
+                        <button type="button" wire:click="import" wire:loading.attr="disabled" wire:target="import" @disabled($validCount === 0) class="inline-flex items-center px-4 py-2 bg-pu-navy border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-pu-navy-700 disabled:opacity-50">
                             <span wire:loading.remove wire:target="import">Impor {{ $validCount }} Pekerjaan</span>
                             <span wire:loading wire:target="import">Mengimpor...</span>
                         </button>

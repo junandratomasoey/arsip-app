@@ -17,10 +17,10 @@
                 @endif
 
                 <span class="ms-auto hidden group-hover:flex items-center gap-3 text-xs">
-                    <button type="button" wire:click="createNew({{ $node['id'] }})" class="text-indigo-600 hover:underline">
+                    <button type="button" wire:click="createNew({{ $node['id'] }})" class="text-pu-navy-600 hover:underline">
                         + sub-unit
                     </button>
-                    <button type="button" wire:click="edit({{ $node['id'] }})" class="text-indigo-600 hover:underline">
+                    <button type="button" wire:click="edit({{ $node['id'] }})" class="text-pu-navy-600 hover:underline">
                         ubah
                     </button>
                     <button type="button" wire:click="toggleActive({{ $node['id'] }})" class="text-amber-600 hover:underline">

@@ -18,15 +18,15 @@
 
                 <span class="ms-auto hidden group-hover:flex items-center gap-3 text-xs">
                     @if ($node['type'] !== 'folder')
-                        <button type="button" wire:click="createNew({{ $node['id'] }})" class="text-indigo-600 hover:underline">
+                        <button type="button" wire:click="createNew({{ $node['id'] }})" class="text-pu-navy-600 hover:underline">
                             + sub-lokasi
                         </button>
                     @endif
-                    <a href="{{ route('admin.physical-locations.show', $node['id']) }}" wire:navigate class="text-indigo-600 hover:underline">
+                    <a href="{{ route('admin.physical-locations.show', $node['id']) }}" wire:navigate class="text-pu-navy-600 hover:underline">
                         QR
                     </a>
                     @can('archive.update')
-                        <button type="button" wire:click="edit({{ $node['id'] }})" class="text-indigo-600 hover:underline">
+                        <button type="button" wire:click="edit({{ $node['id'] }})" class="text-pu-navy-600 hover:underline">
                             ubah
                         </button>
                         <button type="button" wire:click="toggleActive({{ $node['id'] }})" class="text-amber-600 hover:underline">

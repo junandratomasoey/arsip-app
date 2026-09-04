@@ -48,7 +48,7 @@ new #[Layout('layouts.public')] class extends Component
             type="search"
             wire:model.live.debounce.400ms="search"
             placeholder="Cari judul dokumen, kode, atau nama pekerjaan..."
-            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-pu-navy-500 focus:ring-pu-navy-500 text-sm"
         >
     </div>
 </x-slot>

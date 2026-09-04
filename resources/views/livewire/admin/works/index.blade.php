@@ -112,7 +112,7 @@ new #[Layout('layouts.app')] class extends Component
                 <a href="{{ route('admin.works.import') }}" wire:navigate class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50">
                     Impor Excel
                 </a>
-                <a href="{{ route('admin.works.create') }}" wire:navigate class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                <a href="{{ route('admin.works.create') }}" wire:navigate class="inline-flex items-center px-4 py-2 bg-pu-navy border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-pu-navy-700">
                     + Tambah Pekerjaan
                 </a>
             </div>
@@ -192,7 +192,7 @@ new #[Layout('layouts.app')] class extends Component
                             <td class="px-4 py-2 text-gray-500 whitespace-nowrap">{{ $work->fiscal_year ?? '-' }}</td>
                             <td class="px-4 py-2 whitespace-nowrap">
                                 @if ($work->workStatus)
-                                    <span class="text-[10px] font-semibold uppercase tracking-wide rounded px-1.5 py-0.5 bg-indigo-100 text-indigo-700">
+                                    <span class="text-[10px] font-semibold uppercase tracking-wide rounded px-1.5 py-0.5 bg-pu-navy-100 text-pu-navy-700">
                                         {{ $work->workStatus->name }}
                                     </span>
                                 @else
@@ -201,11 +201,11 @@ new #[Layout('layouts.app')] class extends Component
                             </td>
                             <td class="px-4 py-2 text-right space-x-3 text-xs whitespace-nowrap">
                                 @can('document.view')
-                                    <a href="{{ route('admin.works.documents', $work) }}" wire:navigate class="text-indigo-600 hover:underline">dokumen</a>
+                                    <a href="{{ route('admin.works.documents', $work) }}" wire:navigate class="text-pu-navy-600 hover:underline">dokumen</a>
                                 @endcan
-                                <a href="{{ route('admin.works.locations', $work) }}" wire:navigate class="text-indigo-600 hover:underline">lokasi</a>
+                                <a href="{{ route('admin.works.locations', $work) }}" wire:navigate class="text-pu-navy-600 hover:underline">lokasi</a>
                                 @can('work.update')
-                                    <a href="{{ route('admin.works.edit', $work) }}" wire:navigate class="text-indigo-600 hover:underline">ubah</a>
+                                    <a href="{{ route('admin.works.edit', $work) }}" wire:navigate class="text-pu-navy-600 hover:underline">ubah</a>
                                 @endcan
                                 @can('work.delete')
                                     <button type="button" wire:click="confirmDelete('{{ $work->id }}')" class="text-red-600 hover:underline">hapus</button>

@@ -19,207 +19,64 @@ new class extends Component
     }
 }; ?>
 
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
-    <!-- Primary Navigation Menu -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-            <div class="flex">
-                <!-- Logo -->
-                <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}" wire:navigate>
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
-                    </a>
-                </div>
+<div x-data="{ mobileOpen: false }">
+    {{-- Bar atas untuk layar kecil: logo + tombol buka menu. Sidebar
+         sesungguhnya di layar kecil muncul sebagai laci (drawer) di
+         bawah ini, bukan panel tetap seperti di layar besar. --}}
+    <div class="lg:hidden sticky top-0 z-30 flex items-center justify-between gap-3 bg-white px-4 py-3 shadow">
+        <a href="{{ route('dashboard') }}" wire:navigate>
+            <img src="{{ asset('images/logo-kemenpu-compact.png') }}" alt="Kementerian PU" class="h-7 w-auto">
+        </a>
 
-                <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
+        <button type="button" @click="mobileOpen = true" class="p-2 -mr-2 text-pu-navy-500 hover:text-pu-navy-700">
+            <span class="sr-only">{{ __('Buka menu') }}</span>
+            <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+        </button>
+    </div>
 
-                    @can('work.view')
-                        <x-nav-link :href="route('admin.works.index')" :active="request()->routeIs('admin.works.*')" wire:navigate>
-                            {{ __('Pekerjaan') }}
-                        </x-nav-link>
-                    @endcan
+    {{-- Laci menu untuk layar kecil --}}
+    <div x-show="mobileOpen" x-cloak class="lg:hidden fixed inset-0 z-40" role="dialog" aria-modal="true">
+        <div x-show="mobileOpen" x-transition.opacity @click="mobileOpen = false" class="fixed inset-0 bg-black/50"></div>
 
-                    @can('organization.manage')
-                        <x-nav-link :href="route('admin.organizational-units.index')" :active="request()->routeIs('admin.organizational-units.index')" wire:navigate>
-                            {{ __('Struktur Organisasi') }}
-                        </x-nav-link>
-                    @endcan
+        <div
+            x-show="mobileOpen"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="-translate-x-full"
+            x-transition:enter-end="translate-x-0"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="translate-x-0"
+            x-transition:leave-end="-translate-x-full"
+            class="fixed inset-y-0 left-0 flex w-72 max-w-[85%] flex-col bg-pu-navy-500"
+        >
+            <div class="flex items-center justify-between bg-white px-4 py-4">
+                <img src="{{ asset('images/logo-kemenpu-compact.png') }}" alt="Kementerian PU" class="h-8 w-auto">
 
-                    @can('settings.manage')
-                        <x-nav-link :href="route('admin.work-types.index')" :active="request()->routeIs('admin.work-types.index')" wire:navigate>
-                            {{ __('Jenis Pekerjaan') }}
-                        </x-nav-link>
-
-                        <x-nav-link :href="route('admin.phases.index')" :active="request()->routeIs('admin.phases.index')" wire:navigate>
-                            {{ __('Fase') }}
-                        </x-nav-link>
-
-                        <x-nav-link :href="route('admin.work-statuses.index')" :active="request()->routeIs('admin.work-statuses.index')" wire:navigate>
-                            {{ __('Status Pekerjaan') }}
-                        </x-nav-link>
-
-                        <x-nav-link :href="route('admin.tags.index')" :active="request()->routeIs('admin.tags.index')" wire:navigate>
-                            {{ __('Tags') }}
-                        </x-nav-link>
-                    @endcan
-
-                    @can('archive.view')
-                        <x-nav-link :href="route('admin.physical-locations.index')" :active="request()->routeIs('admin.physical-locations.*')" wire:navigate>
-                            {{ __('Lokasi Fisik') }}
-                        </x-nav-link>
-
-                        <x-nav-link :href="route('admin.archive.index')" :active="request()->routeIs('admin.archive.index')" wire:navigate>
-                            {{ __('Penempatan Arsip') }}
-                        </x-nav-link>
-                    @endcan
-
-                    @can('loan.view')
-                        <x-nav-link :href="route('admin.loans.index')" :active="request()->routeIs('admin.loans.index')" wire:navigate>
-                            {{ __('Peminjaman') }}
-                        </x-nav-link>
-                    @endcan
-
-                    @can('audit.view')
-                        <x-nav-link :href="route('admin.audit-logs.index')" :active="request()->routeIs('admin.audit-logs.index')" wire:navigate>
-                            {{ __('Log Audit') }}
-                        </x-nav-link>
-                    @endcan
-
-                    <x-nav-link :href="route('public.library.index')" :active="request()->routeIs('public.library.*')" wire:navigate>
-                        {{ __('Perpustakaan Publik') }}
-                    </x-nav-link>
-                </div>
-            </div>
-
-            <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
-                <x-dropdown align="right" width="48">
-                    <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                            <div x-data="{{ json_encode(['name' => auth()->user()->name]) }}" x-text="name" x-on:profile-updated.window="name = $event.detail.name"></div>
-
-                            <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                        </button>
-                    </x-slot>
-
-                    <x-slot name="content">
-                        <x-dropdown-link :href="route('profile')" wire:navigate>
-                            {{ __('Profile') }}
-                        </x-dropdown-link>
-
-                        <!-- Authentication -->
-                        <button wire:click="logout" class="w-full text-start">
-                            <x-dropdown-link>
-                                {{ __('Log Out') }}
-                            </x-dropdown-link>
-                        </button>
-                    </x-slot>
-                </x-dropdown>
-            </div>
-
-            <!-- Hamburger -->
-            <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
+                <button type="button" @click="mobileOpen = false" class="p-2 -mr-2 text-pu-navy-500 hover:text-pu-navy-700">
+                    <span class="sr-only">{{ __('Tutup menu') }}</span>
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
+
+            @include('components.sidebar-menu')
+
+            @include('components.sidebar-user')
         </div>
     </div>
 
-    <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-        <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
-                {{ __('Dashboard') }}
-            </x-responsive-nav-link>
-
-            @can('work.view')
-                <x-responsive-nav-link :href="route('admin.works.index')" :active="request()->routeIs('admin.works.*')" wire:navigate>
-                    {{ __('Pekerjaan') }}
-                </x-responsive-nav-link>
-            @endcan
-
-            @can('organization.manage')
-                <x-responsive-nav-link :href="route('admin.organizational-units.index')" :active="request()->routeIs('admin.organizational-units.index')" wire:navigate>
-                    {{ __('Struktur Organisasi') }}
-                </x-responsive-nav-link>
-            @endcan
-
-            @can('settings.manage')
-                <x-responsive-nav-link :href="route('admin.work-types.index')" :active="request()->routeIs('admin.work-types.index')" wire:navigate>
-                    {{ __('Jenis Pekerjaan') }}
-                </x-responsive-nav-link>
-
-                <x-responsive-nav-link :href="route('admin.phases.index')" :active="request()->routeIs('admin.phases.index')" wire:navigate>
-                    {{ __('Fase') }}
-                </x-responsive-nav-link>
-
-                <x-responsive-nav-link :href="route('admin.work-statuses.index')" :active="request()->routeIs('admin.work-statuses.index')" wire:navigate>
-                    {{ __('Status Pekerjaan') }}
-                </x-responsive-nav-link>
-
-                <x-responsive-nav-link :href="route('admin.tags.index')" :active="request()->routeIs('admin.tags.index')" wire:navigate>
-                    {{ __('Tags') }}
-                </x-responsive-nav-link>
-            @endcan
-
-            @can('archive.view')
-                <x-responsive-nav-link :href="route('admin.physical-locations.index')" :active="request()->routeIs('admin.physical-locations.*')" wire:navigate>
-                    {{ __('Lokasi Fisik') }}
-                </x-responsive-nav-link>
-
-                <x-responsive-nav-link :href="route('admin.archive.index')" :active="request()->routeIs('admin.archive.index')" wire:navigate>
-                    {{ __('Penempatan Arsip') }}
-                </x-responsive-nav-link>
-            @endcan
-
-            @can('loan.view')
-                <x-responsive-nav-link :href="route('admin.loans.index')" :active="request()->routeIs('admin.loans.index')" wire:navigate>
-                    {{ __('Peminjaman') }}
-                </x-responsive-nav-link>
-            @endcan
-
-            @can('audit.view')
-                <x-responsive-nav-link :href="route('admin.audit-logs.index')" :active="request()->routeIs('admin.audit-logs.index')" wire:navigate>
-                    {{ __('Log Audit') }}
-                </x-responsive-nav-link>
-            @endcan
-
-            <x-responsive-nav-link :href="route('public.library.index')" :active="request()->routeIs('public.library.*')" wire:navigate>
-                {{ __('Perpustakaan Publik') }}
-            </x-responsive-nav-link>
+    {{-- Panel sidebar tetap untuk layar besar --}}
+    <div class="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:flex lg:w-64 lg:flex-col bg-pu-navy-500">
+        <div class="bg-white px-4 py-5">
+            <a href="{{ route('dashboard') }}" wire:navigate>
+                <img src="{{ asset('images/logo-kemenpu-compact.png') }}" alt="Kementerian PU" class="h-9 w-auto">
+            </a>
         </div>
 
-        <!-- Responsive Settings Options -->
-        <div class="pt-4 pb-1 border-t border-gray-200">
-            <div class="px-4">
-                <div class="font-medium text-base text-gray-800" x-data="{{ json_encode(['name' => auth()->user()->name]) }}" x-text="name" x-on:profile-updated.window="name = $event.detail.name"></div>
-                <div class="font-medium text-sm text-gray-500">{{ auth()->user()->email }}</div>
-            </div>
+        @include('components.sidebar-menu')
 
-            <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('profile')" wire:navigate>
-                    {{ __('Profile') }}
-                </x-responsive-nav-link>
-
-                <!-- Authentication -->
-                <button wire:click="logout" class="w-full text-start">
-                    <x-responsive-nav-link>
-                        {{ __('Log Out') }}
-                    </x-responsive-nav-link>
-                </button>
-            </div>
-        </div>
+        @include('components.sidebar-user')
     </div>
-</nav>
+</div>

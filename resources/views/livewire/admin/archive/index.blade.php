@@ -155,7 +155,7 @@ new #[Layout('layouts.app')] class extends Component
                                 <td class="px-4 py-2 text-gray-500 whitespace-nowrap">{{ $document->work->code }} - {{ $document->work->name }}</td>
                                 <td class="px-4 py-2 text-gray-500">
                                     @if ($document->physicalLocation)
-                                        <a href="{{ route('admin.physical-locations.show', $document->physicalLocation->id) }}" wire:navigate class="text-indigo-600 hover:underline">
+                                        <a href="{{ route('admin.physical-locations.show', $document->physicalLocation->id) }}" wire:navigate class="text-pu-navy-600 hover:underline">
                                             {{ $document->physicalLocation->breadcrumbLabel() }}
                                         </a>
                                         @if ($document->physical_code)
@@ -167,7 +167,7 @@ new #[Layout('layouts.app')] class extends Component
                                 </td>
                                 <td class="px-4 py-2 text-right space-x-3 text-xs whitespace-nowrap">
                                     @can('archive.create')
-                                        <button type="button" wire:click="startAssign('{{ $document->id }}')" class="text-indigo-600 hover:underline">
+                                        <button type="button" wire:click="startAssign('{{ $document->id }}')" class="text-pu-navy-600 hover:underline">
                                             {{ $document->physicalLocation ? 'ubah lokasi' : 'tempatkan' }}
                                         </button>
                                     @endcan
@@ -232,7 +232,7 @@ new #[Layout('layouts.app')] class extends Component
                         <button type="button" wire:click="cancelAssign" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50">
                             Batal
                         </button>
-                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-pu-navy border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-pu-navy-700">
                             Simpan
                         </button>
                     </div>

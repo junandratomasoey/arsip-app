@@ -244,7 +244,7 @@ new #[Layout('layouts.app')] class extends Component
                                         @endcan
                                     @elseif ($loan->status === 'approved')
                                         @can('loan.return')
-                                            <button type="button" wire:click="confirmReturn('{{ $loan->id }}')" class="text-indigo-600 hover:underline">tandai dikembalikan</button>
+                                            <button type="button" wire:click="confirmReturn('{{ $loan->id }}')" class="text-pu-navy-600 hover:underline">tandai dikembalikan</button>
                                         @endcan
                                     @endif
                                 </td>
@@ -279,7 +279,7 @@ new #[Layout('layouts.app')] class extends Component
                         <button type="button" wire:click="cancelApprove" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50">
                             Batal
                         </button>
-                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-pu-navy border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-pu-navy-700">
                             Setujui
                         </button>
                     </div>
@@ -296,7 +296,7 @@ new #[Layout('layouts.app')] class extends Component
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Tolak Peminjaman</h3>
                     <div>
                         <x-input-label for="rejectionReason" value="Alasan penolakan" />
-                        <textarea wire:model="rejectionReason" id="rejectionReason" rows="3" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"></textarea>
+                        <textarea wire:model="rejectionReason" id="rejectionReason" rows="3" class="mt-1 block w-full border-gray-300 focus:border-pu-navy-500 focus:ring-pu-navy-500 rounded-md shadow-sm"></textarea>
                         <x-input-error :messages="$errors->get('rejectionReason')" class="mt-1" />
                     </div>
                     <div class="mt-6 flex justify-end gap-3">
@@ -321,7 +321,7 @@ new #[Layout('layouts.app')] class extends Component
                     <button type="button" wire:click="cancelReturn" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50">
                         Batal
                     </button>
-                    <button type="button" wire:click="markReturned" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                    <button type="button" wire:click="markReturned" class="inline-flex items-center px-4 py-2 bg-pu-navy border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-pu-navy-700">
                         Ya, Sudah Dikembalikan
                     </button>
                 </div>
