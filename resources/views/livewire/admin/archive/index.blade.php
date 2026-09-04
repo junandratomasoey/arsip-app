@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\AuditLog;
 use App\Models\Document;
 use App\Models\PhysicalLocation;
 use Livewire\Attributes\Layout;
@@ -84,10 +85,15 @@ new #[Layout('layouts.app')] class extends Component
             'physicalStoredAt' => 'nullable|date',
         ]);
 
-        Document::findOrFail($this->assigningDocumentId)->update([
+        $document = Document::findOrFail($this->assigningDocumentId);
+        $document->update([
             'physical_location_id' => $this->physicalLocationId,
             'physical_code' => $this->physicalCode !== '' ? $this->physicalCode : null,
             'physical_stored_at' => $this->physicalStoredAt !== '' ? $this->physicalStoredAt : null,
+        ]);
+
+        AuditLog::record('archive.assigned', $document, 'Tempatkan dokumen: ' . $document->title, [
+            'physical_location' => PhysicalLocation::find($this->physicalLocationId)?->breadcrumbLabel(),
         ]);
 
         $this->assigningDocumentId = null;
@@ -98,11 +104,14 @@ new #[Layout('layouts.app')] class extends Component
     {
         abort_unless(auth()->user()->can('archive.update'), 403);
 
-        Document::findOrFail($documentId)->update([
+        $document = Document::findOrFail($documentId);
+        $document->update([
             'physical_location_id' => null,
             'physical_code' => null,
             'physical_stored_at' => null,
         ]);
+
+        AuditLog::record('archive.unassigned', $document, 'Lepas dokumen dari lokasi fisik: ' . $document->title);
 
         session()->flash('status', 'Dokumen dilepas dari lokasi fisik.');
     }

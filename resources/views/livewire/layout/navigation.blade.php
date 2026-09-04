@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Actions\Logout;
+use App\Models\AuditLog;
 use Livewire\Volt\Component;
 
 new class extends Component
@@ -10,6 +11,8 @@ new class extends Component
      */
     public function logout(Logout $logout): void
     {
+        AuditLog::record('auth.logout', auth()->user(), 'Logout: ' . auth()->user()->name);
+
         $logout();
 
         $this->redirect('/', navigate: true);
@@ -77,6 +80,12 @@ new class extends Component
                     @can('loan.view')
                         <x-nav-link :href="route('admin.loans.index')" :active="request()->routeIs('admin.loans.index')" wire:navigate>
                             {{ __('Peminjaman') }}
+                        </x-nav-link>
+                    @endcan
+
+                    @can('audit.view')
+                        <x-nav-link :href="route('admin.audit-logs.index')" :active="request()->routeIs('admin.audit-logs.index')" wire:navigate>
+                            {{ __('Log Audit') }}
                         </x-nav-link>
                     @endcan
 
@@ -178,6 +187,12 @@ new class extends Component
             @can('loan.view')
                 <x-responsive-nav-link :href="route('admin.loans.index')" :active="request()->routeIs('admin.loans.index')" wire:navigate>
                     {{ __('Peminjaman') }}
+                </x-responsive-nav-link>
+            @endcan
+
+            @can('audit.view')
+                <x-responsive-nav-link :href="route('admin.audit-logs.index')" :active="request()->routeIs('admin.audit-logs.index')" wire:navigate>
+                    {{ __('Log Audit') }}
                 </x-responsive-nav-link>
             @endcan
 

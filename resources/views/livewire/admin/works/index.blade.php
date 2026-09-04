@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\AuditLog;
 use App\Models\OrganizationalUnit;
 use App\Models\Work;
 use App\Models\WorkStatus;
@@ -95,6 +96,8 @@ new #[Layout('layouts.app')] class extends Component
 
             return;
         }
+
+        AuditLog::record('work.deleted', $work, 'Hapus pekerjaan: ' . $work->code . ' - ' . $work->name);
 
         $work->delete();
         $this->confirmingDeleteId = null;

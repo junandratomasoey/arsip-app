@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\AuditLog;
 use App\Models\Document;
 use App\Models\Loan;
 use Livewire\Attributes\Layout;
@@ -85,7 +86,7 @@ new #[Layout('layouts.public')] class extends Component
             'purpose' => 'required|string|max:2000',
         ]);
 
-        Loan::create([
+        $loan = Loan::create([
             'document_id' => $this->document->id,
             'borrower_name' => $this->borrowerName,
             'borrower_instansi' => $this->borrowerInstansi !== '' ? $this->borrowerInstansi : null,
@@ -93,6 +94,10 @@ new #[Layout('layouts.public')] class extends Component
             'purpose' => $this->purpose,
             'status' => Loan::STATUS_PENDING,
             'requested_by' => auth()->id(),
+        ]);
+
+        AuditLog::record('loan.requested', $loan, 'Ajukan peminjaman (publik): ' . $this->document->title, [
+            'borrower' => $loan->borrower_name,
         ]);
 
         $this->showBorrowForm = false;

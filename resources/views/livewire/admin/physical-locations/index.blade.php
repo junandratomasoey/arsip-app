@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\AuditLog;
 use App\Models\PhysicalLocation;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
@@ -114,17 +115,20 @@ new #[Layout('layouts.app')] class extends Component
         if ($this->editingId) {
             abort_unless(auth()->user()->can('archive.update'), 403);
 
-            PhysicalLocation::findOrFail($this->editingId)->update([
+            $location = PhysicalLocation::findOrFail($this->editingId);
+            $location->update([
                 'code' => $this->code !== '' ? $this->code : null,
                 'name' => $this->name,
                 'description' => $this->description !== '' ? $this->description : null,
                 'is_active' => $this->isActive,
                 'order_column' => $this->orderColumn ?: 0,
             ]);
+
+            AuditLog::record('physical_location.updated', $location, 'Ubah lokasi fisik: ' . $location->breadcrumbLabel());
         } else {
             abort_unless(auth()->user()->can('archive.create'), 403);
 
-            PhysicalLocation::create([
+            $location = PhysicalLocation::create([
                 'parent_id' => $this->parentId,
                 'type' => $this->type,
                 'code' => $this->code !== '' ? $this->code : null,
@@ -133,6 +137,8 @@ new #[Layout('layouts.app')] class extends Component
                 'is_active' => $this->isActive,
                 'order_column' => $this->orderColumn ?: 0,
             ]);
+
+            AuditLog::record('physical_location.created', $location, 'Buat lokasi fisik: ' . $location->breadcrumbLabel());
         }
 
         $this->showForm = false;

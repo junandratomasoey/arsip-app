@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Forms\LoginForm;
+use App\Models\AuditLog;
 use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
@@ -19,6 +20,8 @@ new #[Layout('layouts.guest')] class extends Component
         $this->form->authenticate();
 
         Session::regenerate();
+
+        AuditLog::record('auth.login', auth()->user(), 'Login: ' . auth()->user()->name);
 
         $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
     }

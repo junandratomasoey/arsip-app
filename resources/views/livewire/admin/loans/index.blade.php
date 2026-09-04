@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\AuditLog;
 use App\Models\Loan;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
@@ -64,11 +65,17 @@ new #[Layout('layouts.app')] class extends Component
             'dueDate' => 'nullable|date',
         ]);
 
-        Loan::where('status', Loan::STATUS_PENDING)->findOrFail($this->approvingId)->update([
+        $loan = Loan::where('status', Loan::STATUS_PENDING)->findOrFail($this->approvingId);
+        $loan->update([
             'status' => Loan::STATUS_APPROVED,
             'due_date' => $this->dueDate !== '' ? $this->dueDate : null,
             'processed_by' => auth()->id(),
             'processed_at' => now(),
+        ]);
+
+        AuditLog::record('loan.approved', $loan, 'Setujui peminjaman: ' . $loan->document->title, [
+            'borrower' => $loan->borrower_name,
+            'due_date' => $loan->due_date?->format('Y-m-d'),
         ]);
 
         $this->approvingId = null;
@@ -97,11 +104,17 @@ new #[Layout('layouts.app')] class extends Component
             'rejectionReason' => 'required|string|max:1000',
         ]);
 
-        Loan::where('status', Loan::STATUS_PENDING)->findOrFail($this->rejectingId)->update([
+        $loan = Loan::where('status', Loan::STATUS_PENDING)->findOrFail($this->rejectingId);
+        $loan->update([
             'status' => Loan::STATUS_REJECTED,
             'rejection_reason' => $this->rejectionReason,
             'processed_by' => auth()->id(),
             'processed_at' => now(),
+        ]);
+
+        AuditLog::record('loan.rejected', $loan, 'Tolak peminjaman: ' . $loan->document->title, [
+            'borrower' => $loan->borrower_name,
+            'reason' => $loan->rejection_reason,
         ]);
 
         $this->rejectingId = null;
@@ -124,9 +137,14 @@ new #[Layout('layouts.app')] class extends Component
     {
         abort_unless(auth()->user()->can('loan.return'), 403);
 
-        Loan::where('status', Loan::STATUS_APPROVED)->findOrFail($this->confirmingReturnId)->update([
+        $loan = Loan::where('status', Loan::STATUS_APPROVED)->findOrFail($this->confirmingReturnId);
+        $loan->update([
             'status' => Loan::STATUS_RETURNED,
             'returned_at' => now(),
+        ]);
+
+        AuditLog::record('loan.returned', $loan, 'Tandai dikembalikan: ' . $loan->document->title, [
+            'borrower' => $loan->borrower_name,
         ]);
 
         $this->confirmingReturnId = null;

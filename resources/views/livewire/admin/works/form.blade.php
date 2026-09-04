@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\AuditLog;
 use App\Models\OrganizationalUnit;
 use App\Models\Tag;
 use App\Models\User;
@@ -185,6 +186,8 @@ new #[Layout('layouts.app')] class extends Component
             'work_status_id' => $this->workStatusId,
         ];
 
+        $isNew = ! $this->work;
+
         if ($this->work) {
             $this->work->update($data);
             $work = $this->work;
@@ -194,6 +197,12 @@ new #[Layout('layouts.app')] class extends Component
         }
 
         $work->tags()->sync($this->selectedTagIds);
+
+        AuditLog::record(
+            $isNew ? 'work.created' : 'work.updated',
+            $work,
+            ($isNew ? 'Buat pekerjaan: ' : 'Ubah pekerjaan: ') . $work->code . ' - ' . $work->name
+        );
 
         session()->flash('status', 'Data pekerjaan berhasil disimpan.');
 

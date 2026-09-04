@@ -67,6 +67,11 @@ Route::middleware(['auth', 'can:loan.view'])->prefix('admin')->name('admin.')->g
         ->name('loans.index');
 });
 
+Route::middleware(['auth', 'can:audit.view'])->prefix('admin')->name('admin.')->group(function () {
+    Volt::route('audit-logs', 'admin.audit-logs.index')
+        ->name('audit-logs.index');
+});
+
 Route::middleware('throttle:120,1')->group(function () {
     Volt::route('pustaka', 'public.library.index')
         ->name('public.library.index');

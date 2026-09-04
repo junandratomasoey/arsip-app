@@ -23,6 +23,7 @@ class RolePermissionSeeder extends Seeder
             'loan.view', 'loan.approve', 'loan.reject', 'loan.return',
             'archive.view', 'archive.create', 'archive.update',
             'user.manage', 'organization.manage', 'settings.manage',
+            'audit.view',
         ];
 
         foreach ($permissions as $permission) {

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\AuditLog;
 use App\Models\Document;
 use App\Models\DocumentFile;
 use App\Models\DocumentFileVersion;
@@ -108,12 +109,17 @@ new #[Layout('layouts.app')] class extends Component
             'visibility' => 'required|in:public,internal,restricted,confidential',
         ]);
 
-        $this->work->documents()->create([
+        $document = $this->work->documents()->create([
             'phase_id' => $this->phaseId,
             'title' => $this->title,
             'description' => $this->description !== '' ? $this->description : null,
             'visibility' => $this->visibility,
             'created_by' => auth()->id(),
+        ]);
+
+        AuditLog::record('document.created', $document, 'Buat dokumen: ' . $document->title, [
+            'work' => $this->work->code . ' - ' . $this->work->name,
+            'visibility' => $document->visibility,
         ]);
 
         $this->showDocumentForm = false;
@@ -135,6 +141,11 @@ new #[Layout('layouts.app')] class extends Component
         abort_unless(auth()->user()->can('document.delete'), 403);
 
         $document = Document::where('work_id', $this->work->id)->findOrFail($this->confirmingDeleteDocumentId);
+
+        AuditLog::record('document.deleted', $document, 'Hapus dokumen: ' . $document->title, [
+            'work' => $this->work->code . ' - ' . $this->work->name,
+        ]);
+
         $document->delete();
 
         $this->confirmingDeleteDocumentId = null;
@@ -231,6 +242,11 @@ new #[Layout('layouts.app')] class extends Component
         $version = DocumentFileVersion::whereHas('documentFile.document', fn ($q) => $q->where('work_id', $this->work->id))
             ->findOrFail($versionId);
 
+        AuditLog::record('document.downloaded', $version->documentFile->document, 'Unduh berkas: ' . $version->original_filename, [
+            'file_label' => $version->documentFile->label,
+            'version' => $version->version_number,
+        ]);
+
         return Storage::disk($version->disk)->download($version->path, $version->original_filename);
     }
 
@@ -258,7 +274,7 @@ new #[Layout('layouts.app')] class extends Component
             'purpose' => 'required|string|max:2000',
         ]);
 
-        Loan::create([
+        $loan = Loan::create([
             'document_id' => $this->borrowingDocumentId,
             'borrower_name' => $this->borrowerName,
             'borrower_instansi' => $this->borrowerInstansi !== '' ? $this->borrowerInstansi : null,
@@ -266,6 +282,10 @@ new #[Layout('layouts.app')] class extends Component
             'purpose' => $this->purpose,
             'status' => Loan::STATUS_PENDING,
             'requested_by' => auth()->id(),
+        ]);
+
+        AuditLog::record('loan.requested', $loan, 'Ajukan peminjaman: ' . $loan->document->title, [
+            'borrower' => $loan->borrower_name,
         ]);
 
         $this->borrowingDocumentId = null;
@@ -278,6 +298,8 @@ new #[Layout('layouts.app')] class extends Component
         $loan = Loan::where('requested_by', auth()->id())
             ->where('status', Loan::STATUS_PENDING)
             ->findOrFail($loanId);
+
+        AuditLog::record('loan.cancelled', $loan, 'Batalkan pengajuan peminjaman: ' . $loan->document->title);
 
         $loan->delete();
 
