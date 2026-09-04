@@ -67,4 +67,19 @@ Route::middleware(['auth', 'can:loan.view'])->prefix('admin')->name('admin.')->g
         ->name('loans.index');
 });
 
+Route::middleware('throttle:120,1')->group(function () {
+    Volt::route('pustaka', 'public.library.index')
+        ->name('public.library.index');
+
+    Volt::route('pustaka/{document}', 'public.library.show')
+        ->name('public.library.show');
+
+    Route::get('pustaka/{document}/berkas/{version}', function (\App\Models\Document $document, \App\Models\DocumentFileVersion $version) {
+        abort_unless($document->visibility === \App\Models\Document::VISIBILITY_PUBLIC, 404);
+        abort_unless($version->documentFile->document_id === $document->id, 404);
+
+        return \Illuminate\Support\Facades\Storage::disk($version->disk)->download($version->path, $version->original_filename);
+    })->name('public.library.download');
+});
+
 require __DIR__.'/auth.php';

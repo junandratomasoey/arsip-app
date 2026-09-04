@@ -79,6 +79,10 @@ new class extends Component
                             {{ __('Peminjaman') }}
                         </x-nav-link>
                     @endcan
+
+                    <x-nav-link :href="route('public.library.index')" :active="request()->routeIs('public.library.*')" wire:navigate>
+                        {{ __('Perpustakaan Publik') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -176,6 +180,10 @@ new class extends Component
                     {{ __('Peminjaman') }}
                 </x-responsive-nav-link>
             @endcan
+
+            <x-responsive-nav-link :href="route('public.library.index')" :active="request()->routeIs('public.library.*')" wire:navigate>
+                {{ __('Perpustakaan Publik') }}
+            </x-responsive-nav-link>
         </div>
 
         <!-- Responsive Settings Options -->
