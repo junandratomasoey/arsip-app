@@ -44,6 +44,46 @@ Route::middleware(['auth', 'can:work.view'])->prefix('admin')->name('admin.')->g
 
     Volt::route('works/{work}/locations', 'admin.works.locations')
         ->name('works.locations');
+
+    Volt::route('works-import', 'admin.works.import')
+        ->name('works.import');
+
+    // Template Excel untuk impor pekerjaan - closure (bukan Volt) karena
+    // cuma perlu men-stream satu file, sama seperti pola unduh dokumen
+    // publik. Dibatasi work.create karena mengunduh template hanya
+    // relevan untuk yang boleh membuat pekerjaan (import = bulk create).
+    Route::get('works-import/template', function () {
+        abort_unless(auth()->user()->can('work.create'), 403);
+
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $headers = ['Kode Pekerjaan*', 'Nama Pekerjaan*', 'Nama Paket', 'Jenis Pekerjaan', 'Tahun Anggaran', 'Satker', 'PPK'];
+        $sheet->fromArray($headers, null, 'A1');
+        $sheet->fromArray([
+            '2342',
+            'Embung Serbaguna Kalimabu',
+            'Paket Pembangunan Embung Serbaguna',
+            'Embung',
+            2026,
+            'Satker BBWS Nusa Tenggara II',
+            'PPK OP I',
+        ], null, 'A2');
+
+        foreach (range('A', 'G') as $column) {
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
+
+        $sheet->getStyle('A1:G1')->getFont()->setBold(true);
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, 'template-impor-pekerjaan.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    })->name('works.import.template');
 });
 
 Route::middleware(['auth', 'can:document.view'])->prefix('admin')->name('admin.')->group(function () {
