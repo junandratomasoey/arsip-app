@@ -42,16 +42,30 @@ class WorkLocation extends Model
      */
     public static function createFromLatLng(array $attributes, float $lat, float $lng): self
     {
-        $model = new self($attributes);
-        $model->id = (string) \Illuminate\Support\Str::uuid();
-        $model->save();
+        // Kolom geometry NOT NULL tanpa default di DB, jadi tidak bisa lewat
+        // $model->save() dulu baru UPDATE geometry belakangan (insert pertama
+        // akan gagal karena geometry masih null) - geometry harus ikut di
+        // dalam INSERT yang sama.
+        $id = (string) \Illuminate\Support\Str::uuid();
+        $now = now();
 
         DB::statement(
-            'UPDATE work_locations SET geometry = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?',
-            [$lng, $lat, $model->id]
+            'INSERT INTO work_locations (id, work_id, name, type, description, geometry, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ST_SetSRID(ST_MakePoint(?, ?), 4326), ?, ?)',
+            [
+                $id,
+                $attributes['work_id'],
+                $attributes['name'],
+                $attributes['type'],
+                $attributes['description'] ?? null,
+                $lng,
+                $lat,
+                $now,
+                $now,
+            ]
         );
 
-        return $model->refresh();
+        return self::findOrFail($id);
     }
 
     public function updateLatLng(float $lat, float $lng): void
