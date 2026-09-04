@@ -63,6 +63,11 @@ class Document extends Model
         return $this->belongsTo(PhysicalLocation::class, 'physical_location_id');
     }
 
+    public function loans(): HasMany
+    {
+        return $this->hasMany(Loan::class);
+    }
+
     public function tags(): MorphToMany
     {
         return $this->morphToMany(Tag::class, 'taggable');

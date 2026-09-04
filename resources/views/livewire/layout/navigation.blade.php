@@ -73,6 +73,12 @@ new class extends Component
                             {{ __('Penempatan Arsip') }}
                         </x-nav-link>
                     @endcan
+
+                    @can('loan.view')
+                        <x-nav-link :href="route('admin.loans.index')" :active="request()->routeIs('admin.loans.index')" wire:navigate>
+                            {{ __('Peminjaman') }}
+                        </x-nav-link>
+                    @endcan
                 </div>
             </div>
 
@@ -162,6 +168,12 @@ new class extends Component
 
                 <x-responsive-nav-link :href="route('admin.archive.index')" :active="request()->routeIs('admin.archive.index')" wire:navigate>
                     {{ __('Penempatan Arsip') }}
+                </x-responsive-nav-link>
+            @endcan
+
+            @can('loan.view')
+                <x-responsive-nav-link :href="route('admin.loans.index')" :active="request()->routeIs('admin.loans.index')" wire:navigate>
+                    {{ __('Peminjaman') }}
                 </x-responsive-nav-link>
             @endcan
         </div>

@@ -62,4 +62,9 @@ Route::middleware(['auth', 'can:archive.view'])->prefix('admin')->name('admin.')
         ->name('archive.index');
 });
 
+Route::middleware(['auth', 'can:loan.view'])->prefix('admin')->name('admin.')->group(function () {
+    Volt::route('loans', 'admin.loans.index')
+        ->name('loans.index');
+});
+
 require __DIR__.'/auth.php';

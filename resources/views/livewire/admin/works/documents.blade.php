@@ -3,6 +3,7 @@
 use App\Models\Document;
 use App\Models\DocumentFile;
 use App\Models\DocumentFileVersion;
+use App\Models\Loan;
 use App\Models\Phase;
 use App\Models\Work;
 use Illuminate\Support\Facades\Storage;
@@ -35,6 +36,12 @@ new #[Layout('layouts.app')] class extends Component
 
     public array $expandedFileIds = [];
 
+    public ?string $borrowingDocumentId = null;
+    public string $borrowerName = '';
+    public string $borrowerInstansi = '';
+    public string $borrowerContact = '';
+    public string $purpose = '';
+
     public function mount(Work $work): void
     {
         abort_unless(auth()->user()->can('work.view'), 403);
@@ -49,6 +56,10 @@ new #[Layout('layouts.app')] class extends Component
     {
         $documents = $this->work->documents()
             ->with(['phase', 'files.currentVersion', 'files.versions.uploader'])
+            ->with(['loans' => fn ($q) => $q
+                ->where('requested_by', auth()->id())
+                ->whereIn('status', [Loan::STATUS_PENDING, Loan::STATUS_APPROVED])
+                ->latest()])
             ->orderByDesc('created_at')
             ->get();
 
@@ -222,6 +233,56 @@ new #[Layout('layouts.app')] class extends Component
 
         return Storage::disk($version->disk)->download($version->path, $version->original_filename);
     }
+
+    public function startBorrow(string $documentId): void
+    {
+        $this->resetValidation();
+        $this->borrowingDocumentId = $documentId;
+        $this->borrowerName = auth()->user()->name;
+        $this->borrowerInstansi = '';
+        $this->borrowerContact = '';
+        $this->purpose = '';
+    }
+
+    public function cancelBorrow(): void
+    {
+        $this->borrowingDocumentId = null;
+    }
+
+    public function saveBorrow(): void
+    {
+        $this->validate([
+            'borrowerName' => 'required|string|max:255',
+            'borrowerInstansi' => 'nullable|string|max:255',
+            'borrowerContact' => 'required|string|max:255',
+            'purpose' => 'required|string|max:2000',
+        ]);
+
+        Loan::create([
+            'document_id' => $this->borrowingDocumentId,
+            'borrower_name' => $this->borrowerName,
+            'borrower_instansi' => $this->borrowerInstansi !== '' ? $this->borrowerInstansi : null,
+            'borrower_contact' => $this->borrowerContact,
+            'purpose' => $this->purpose,
+            'status' => Loan::STATUS_PENDING,
+            'requested_by' => auth()->id(),
+        ]);
+
+        $this->borrowingDocumentId = null;
+
+        session()->flash('status', 'Pengajuan peminjaman berhasil dikirim, menunggu persetujuan Petugas Arsip.');
+    }
+
+    public function cancelLoanRequest(string $loanId): void
+    {
+        $loan = Loan::where('requested_by', auth()->id())
+            ->where('status', Loan::STATUS_PENDING)
+            ->findOrFail($loanId);
+
+        $loan->delete();
+
+        session()->flash('status', 'Pengajuan peminjaman dibatalkan.');
+    }
 }; ?>
 
 <x-slot name="header">
@@ -280,6 +341,21 @@ new #[Layout('layouts.app')] class extends Component
                         @endif
                     </div>
                     <div class="flex items-center gap-3 text-xs shrink-0">
+                        @if ($document->loans->isNotEmpty())
+                            @php($myLoan = $document->loans->first())
+                            <span @class([
+                                'text-[10px] font-semibold uppercase tracking-wide rounded px-1.5 py-0.5',
+                                'bg-amber-100 text-amber-700' => $myLoan->status === 'pending',
+                                'bg-emerald-100 text-emerald-700' => $myLoan->status === 'approved',
+                            ])>
+                                {{ $myLoan->statusLabel() }}
+                            </span>
+                            @if ($myLoan->status === 'pending')
+                                <button type="button" wire:click="cancelLoanRequest('{{ $myLoan->id }}')" class="text-red-600 hover:underline">batalkan</button>
+                            @endif
+                        @else
+                            <button type="button" wire:click="startBorrow('{{ $document->id }}')" class="text-indigo-600 hover:underline">pinjam</button>
+                        @endif
                         @can('document.update')
                             <button type="button" wire:click="startAddFile('{{ $document->id }}')" class="text-indigo-600 hover:underline">+ file</button>
                         @endcan
@@ -507,5 +583,51 @@ new #[Layout('layouts.app')] class extends Component
         </div>
     </div>
 @endif
-</div>
 
+@if ($borrowingDocumentId)
+    <div class="fixed inset-0 z-50 overflow-y-auto px-4 py-6 sm:px-0">
+        <div class="fixed inset-0 bg-gray-500/75" wire:click="cancelBorrow"></div>
+
+        <div class="relative mb-6 bg-white rounded-lg overflow-hidden shadow-xl sm:max-w-md sm:mx-auto">
+            <form wire:submit="saveBorrow" class="p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Ajukan Peminjaman</h3>
+
+                <div class="space-y-4">
+                    <div>
+                        <x-input-label for="borrowerName" value="Nama Peminjam" />
+                        <x-text-input wire:model="borrowerName" id="borrowerName" type="text" class="mt-1 block w-full" />
+                        <x-input-error :messages="$errors->get('borrowerName')" class="mt-1" />
+                    </div>
+
+                    <div>
+                        <x-input-label for="borrowerInstansi" value="Instansi (opsional)" />
+                        <x-text-input wire:model="borrowerInstansi" id="borrowerInstansi" type="text" class="mt-1 block w-full" />
+                        <x-input-error :messages="$errors->get('borrowerInstansi')" class="mt-1" />
+                    </div>
+
+                    <div>
+                        <x-input-label for="borrowerContact" value="Kontak (telepon/email)" />
+                        <x-text-input wire:model="borrowerContact" id="borrowerContact" type="text" class="mt-1 block w-full" />
+                        <x-input-error :messages="$errors->get('borrowerContact')" class="mt-1" />
+                    </div>
+
+                    <div>
+                        <x-input-label for="purpose" value="Keperluan Peminjaman" />
+                        <textarea wire:model="purpose" id="purpose" rows="3" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"></textarea>
+                        <x-input-error :messages="$errors->get('purpose')" class="mt-1" />
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end gap-3">
+                    <button type="button" wire:click="cancelBorrow" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50">
+                        Batal
+                    </button>
+                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                        Kirim Pengajuan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+@endif
+</div>
