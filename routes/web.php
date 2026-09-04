@@ -41,6 +41,9 @@ Route::middleware(['auth', 'can:work.view'])->prefix('admin')->name('admin.')->g
 
     Volt::route('works/{work}/edit', 'admin.works.form')
         ->name('works.edit');
+
+    Volt::route('works/{work}/locations', 'admin.works.locations')
+        ->name('works.locations');
 });
 
 Route::middleware(['auth', 'can:document.view'])->prefix('admin')->name('admin.')->group(function () {

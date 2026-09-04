@@ -189,18 +189,19 @@ new #[Layout('layouts.app')] class extends Component
 }; ?>
 
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Struktur Organisasi
-            </h2>
-            <button type="button" wire:click="createNew" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
-                + Unit Baru
-            </button>
-        </div>
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            Struktur Organisasi
+        </h2>
     </x-slot>
 
+<div>
     <div class="py-12">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8 space-y-4">
+            <div class="flex justify-end">
+                <button type="button" wire:click="createNew" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                    + Unit Baru
+                </button>
+            </div>
             <div class="bg-white shadow-sm sm:rounded-lg p-6">
                 <p class="text-sm text-gray-500 mb-4">
                     Kelola struktur organisasi (organisasi, bagian, bidang, satker, PPK) secara berjenjang.
@@ -310,3 +311,5 @@ new #[Layout('layouts.app')] class extends Component
             </div>
         </div>
     @endif
+</div>
+

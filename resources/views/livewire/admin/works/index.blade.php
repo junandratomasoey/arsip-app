@@ -112,6 +112,7 @@ new #[Layout('layouts.app')] class extends Component
     </div>
 </x-slot>
 
+<div>
 <div class="py-12">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-4">
 
@@ -194,6 +195,7 @@ new #[Layout('layouts.app')] class extends Component
                                 @can('document.view')
                                     <a href="{{ route('admin.works.documents', $work) }}" wire:navigate class="text-indigo-600 hover:underline">dokumen</a>
                                 @endcan
+                                <a href="{{ route('admin.works.locations', $work) }}" wire:navigate class="text-indigo-600 hover:underline">lokasi</a>
                                 @can('work.update')
                                     <a href="{{ route('admin.works.edit', $work) }}" wire:navigate class="text-indigo-600 hover:underline">ubah</a>
                                 @endcan
@@ -240,3 +242,5 @@ new #[Layout('layouts.app')] class extends Component
         </div>
     </div>
 @endif
+</div>
+

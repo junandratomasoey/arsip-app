@@ -230,21 +230,23 @@ new #[Layout('layouts.app')] class extends Component
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Dokumen Pekerjaan</h2>
             <p class="text-sm text-gray-500">{{ $work->code }} - {{ $work->name }}</p>
         </div>
-        <div class="flex items-center gap-3">
-            <a href="{{ route('admin.works.index') }}" wire:navigate class="text-sm text-gray-500 hover:underline">
-                &larr; Kembali ke daftar pekerjaan
-            </a>
-            @can('document.create')
-                <button type="button" wire:click="createDocument" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
-                    + Tambah Dokumen
-                </button>
-            @endcan
-        </div>
+        <a href="{{ route('admin.works.index') }}" wire:navigate class="text-sm text-gray-500 hover:underline">
+            &larr; Kembali ke daftar pekerjaan
+        </a>
     </div>
 </x-slot>
 
+<div>
 <div class="py-12">
     <div class="max-w-5xl mx-auto sm:px-6 lg:px-8 space-y-6">
+
+        @can('document.create')
+            <div class="flex justify-end">
+                <button type="button" wire:click="createDocument" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                    + Tambah Dokumen
+                </button>
+            </div>
+        @endcan
 
         @if (session('status'))
             <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm rounded-md px-4 py-3">
@@ -505,3 +507,5 @@ new #[Layout('layouts.app')] class extends Component
         </div>
     </div>
 @endif
+</div>
+
