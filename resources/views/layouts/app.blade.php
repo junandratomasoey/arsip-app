@@ -19,6 +19,7 @@
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100">
             <livewire:layout.navigation />
+            {{-- asd --}}
 
             <!-- Kolom konten utama, digeser ke kanan sepanjang lebar
                  sidebar tetap (lg:pl-64) supaya tidak tertutup - sidebar-nya
