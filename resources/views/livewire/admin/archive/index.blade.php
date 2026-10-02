@@ -47,10 +47,10 @@ new #[Layout('layouts.app')] class extends Component
         $documents = Document::query()
             ->with(['work', 'physicalLocation'])
             ->when($this->search, fn ($q) => $q->where(fn ($q2) => $q2
-                ->where('title', 'ilike', "%{$this->search}%")
+                ->where('title', 'like', "%{$this->search}%")
                 ->orWhereHas('work', fn ($q3) => $q3
-                    ->where('code', 'ilike', "%{$this->search}%")
-                    ->orWhere('name', 'ilike', "%{$this->search}%"))))
+                    ->where('code', 'like', "%{$this->search}%")
+                    ->orWhere('name', 'like', "%{$this->search}%"))))
             ->orderByDesc('created_at')
             ->paginate(15);
 

@@ -25,10 +25,10 @@ new #[Layout('layouts.public')] class extends Component
             ->with('work')
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('title', 'ilike', "%{$this->search}%")
+                    $q->where('title', 'like', "%{$this->search}%")
                         ->orWhereHas('work', function ($w) {
-                            $w->where('code', 'ilike', "%{$this->search}%")
-                                ->orWhere('name', 'ilike', "%{$this->search}%");
+                            $w->where('code', 'like', "%{$this->search}%")
+                                ->orWhere('name', 'like', "%{$this->search}%");
                         });
                 });
             })

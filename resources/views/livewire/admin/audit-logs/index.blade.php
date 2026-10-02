@@ -69,7 +69,7 @@ new #[Layout('layouts.app')] class extends Component
     {
         $logs = AuditLog::query()
             ->with('user')
-            ->when($this->search, fn ($q) => $q->where('description', 'ilike', "%{$this->search}%"))
+            ->when($this->search, fn ($q) => $q->where('description', 'like', "%{$this->search}%"))
             ->when($this->filterUserId, fn ($q) => $q->where('user_id', $this->filterUserId))
             ->when($this->filterAction, fn ($q) => $q->where('action', $this->filterAction))
             ->when($this->dateFrom, fn ($q) => $q->whereDate('created_at', '>=', $this->dateFrom))

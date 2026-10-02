@@ -61,8 +61,8 @@ new #[Layout('layouts.app')] class extends Component
         $works = Work::query()
             ->with(['workType', 'workStatus', 'satkerUnit', 'ppkUnit'])
             ->when($this->search, fn ($q) => $q->where(fn ($q2) => $q2
-                ->where('code', 'ilike', "%{$this->search}%")
-                ->orWhere('name', 'ilike', "%{$this->search}%")))
+                ->where('code', 'like', "%{$this->search}%")
+                ->orWhere('name', 'like', "%{$this->search}%")))
             ->when($this->filterSatkerId, fn ($q) => $q->where('satker_unit_id', $this->filterSatkerId))
             ->when($this->filterStatusId, fn ($q) => $q->where('work_status_id', $this->filterStatusId))
             ->when($this->filterFiscalYear, fn ($q) => $q->where('fiscal_year', $this->filterFiscalYear))

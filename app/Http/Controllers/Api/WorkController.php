@@ -23,8 +23,8 @@ class WorkController extends Controller
             ->with(['workType', 'satkerUnit', 'ppkUnit', 'workStatus'])
             ->when($request->string('search')->toString(), function ($query, $search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('code', 'ilike', "%{$search}%")
-                        ->orWhere('name', 'ilike', "%{$search}%");
+                    $q->where('code', 'like', "%{$search}%")
+                        ->orWhere('name', 'like', "%{$search}%");
                 });
             })
             ->when($request->integer('satker_id'), fn ($q, $id) => $q->where('satker_unit_id', $id))
