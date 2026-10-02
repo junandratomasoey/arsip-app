@@ -112,6 +112,41 @@ Route::middleware(['auth', 'can:audit.view'])->prefix('admin')->name('admin.')->
         ->name('audit-logs.index');
 });
 
+// ---------------------------------------------------------------------
+// Surat Menyurat
+// ---------------------------------------------------------------------
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    Volt::route('letters', 'admin.letters.index')->middleware('can:letter.view')->name('letters.index');
+    Volt::route('letters/create', 'admin.letters.form')->middleware('can:letter.create')->name('letters.create');
+    Volt::route('letters/{letter}/edit', 'admin.letters.form')->middleware('can:letter.update')->name('letters.edit');
+
+    // Detail surat & berkasnya juga terbuka untuk penerima disposisi yang
+    // tidak punya letter.view - akses dicek di Letter::isVisibleTo().
+    Volt::route('letters/{letter}', 'admin.letters.show')->withTrashed()->name('letters.show');
+
+    Route::get('letters/{letter}/file', function (\App\Models\Letter $letter) {
+        abort_unless($letter->file_path && $letter->isVisibleTo(auth()->user()), 404);
+
+        \App\Models\AuditLog::record('letter.downloaded', $letter, 'Buka berkas surat: ' . ($letter->letter_number ?? '-'));
+
+        $disk = \Illuminate\Support\Facades\Storage::disk($letter->file_disk);
+
+        return request()->boolean('inline')
+            ? $disk->response($letter->file_path, $letter->file_original_name)
+            : $disk->download($letter->file_path, $letter->file_original_name);
+    })->withTrashed()->name('letters.file');
+
+    Volt::route('dispositions', 'admin.dispositions.index')->name('dispositions.index');
+});
+
+Route::middleware(['auth', 'can:settings.manage'])->prefix('admin')->name('admin.')->group(function () {
+    Volt::route('letter-classifications', 'admin.letter-classifications.index')->name('letter-classifications.index');
+});
+
+Route::middleware(['auth', 'can:user.manage'])->prefix('admin')->name('admin.')->group(function () {
+    Volt::route('users', 'admin.users.index')->name('users.index');
+});
+
 Route::middleware('throttle:120,1')->group(function () {
     Volt::route('pustaka', 'public.library.index')
         ->name('public.library.index');

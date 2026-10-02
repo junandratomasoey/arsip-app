@@ -32,6 +32,29 @@
         @endcan
     @endcan
 
+    @php
+        $openDispositions = \App\Models\LetterDisposition::where('to_user_id', auth()->id())->open()->count();
+    @endphp
+
+    <p class="{{ $groupLabelClasses }}">{{ __('Persuratan') }}</p>
+
+    <a href="{{ route('admin.dispositions.index') }}" wire:navigate class="{{ $itemClasses(request()->routeIs('admin.dispositions.index')) }} justify-between">
+        <span>{{ __('Disposisi Saya') }}</span>
+        @if ($openDispositions > 0)
+            <span class="ml-auto rounded-full bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 leading-none">{{ $openDispositions }}</span>
+        @endif
+    </a>
+
+    @can('letter.view')
+        <a href="{{ route('admin.letters.index', ['arah' => 'masuk']) }}" wire:navigate class="{{ $itemClasses(request()->routeIs('admin.letters.*') && request('arah', 'masuk') === 'masuk' && ! request()->routeIs('admin.letters.show', 'admin.letters.edit')) }}">
+            {{ __('Surat Masuk') }}
+        </a>
+
+        <a href="{{ route('admin.letters.index', ['arah' => 'keluar']) }}" wire:navigate class="{{ $itemClasses(request()->routeIs('admin.letters.*') && request('arah') === 'keluar') }}">
+            {{ __('Surat Keluar') }}
+        </a>
+    @endcan
+
     @canany(['organization.manage', 'settings.manage'])
         <p class="{{ $groupLabelClasses }}">{{ __('Data Master') }}</p>
 
@@ -56,6 +79,10 @@
 
             <a href="{{ route('admin.tags.index') }}" wire:navigate class="{{ $itemClasses(request()->routeIs('admin.tags.index')) }}">
                 {{ __('Tags') }}
+            </a>
+
+            <a href="{{ route('admin.letter-classifications.index') }}" wire:navigate class="{{ $itemClasses(request()->routeIs('admin.letter-classifications.index')) }}">
+                {{ __('Klasifikasi Arsip') }}
             </a>
         @endcan
     @endcanany
@@ -84,9 +111,17 @@
         {{ __('Perpustakaan Publik') }}
     </a>
 
-    @can('audit.view')
+    @canany(['audit.view', 'user.manage'])
         <p class="{{ $groupLabelClasses }}">{{ __('Sistem') }}</p>
+    @endcanany
 
+    @can('user.manage')
+        <a href="{{ route('admin.users.index') }}" wire:navigate class="{{ $itemClasses(request()->routeIs('admin.users.index')) }}">
+            {{ __('Pengguna') }}
+        </a>
+    @endcan
+
+    @can('audit.view')
         <a href="{{ route('admin.audit-logs.index') }}" wire:navigate class="{{ $itemClasses(request()->routeIs('admin.audit-logs.index')) }}">
             {{ __('Log Audit') }}
         </a>

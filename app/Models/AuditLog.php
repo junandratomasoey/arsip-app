@@ -55,6 +55,9 @@ class AuditLog extends Model
             \App\Models\Document::class => 'Dokumen',
             \App\Models\PhysicalLocation::class => 'Lokasi Fisik',
             \App\Models\Loan::class => 'Peminjaman',
+            \App\Models\Letter::class => 'Surat',
+            \App\Models\LetterDisposition::class => 'Disposisi',
+            \App\Models\User::class => 'Pengguna',
             default => '-',
         };
     }

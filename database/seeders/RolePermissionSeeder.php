@@ -24,6 +24,7 @@ class RolePermissionSeeder extends Seeder
             'archive.view', 'archive.create', 'archive.update',
             'user.manage', 'organization.manage', 'settings.manage',
             'audit.view',
+            'letter.view', 'letter.create', 'letter.update', 'letter.delete', 'letter.dispose', 'letter.confidential',
         ];
 
         foreach ($permissions as $permission) {
@@ -36,6 +37,7 @@ class RolePermissionSeeder extends Seeder
         Role::findOrCreate('Admin Arsip', 'web')->syncPermissions([
             'work.view', 'work.create', 'work.update', 'work.delete',
             'document.view', 'document.create', 'document.update', 'document.delete', 'document.download',
+            'letter.view', 'letter.create', 'letter.update', 'letter.delete',
         ]);
 
         // Admin Unit: permission sama dengan Admin Arsip; pembatasan pada
@@ -49,7 +51,20 @@ class RolePermissionSeeder extends Seeder
             'archive.view', 'archive.create', 'archive.update',
             'loan.view', 'loan.approve', 'loan.reject', 'loan.return',
             'document.view', 'document.download',
+            'letter.view', 'letter.create', 'letter.update',
         ]);
+
+        // Pimpinan (Kepala Balai, Kabid/Kabag): membaca semua surat termasuk
+        // yang rahasia dan memberi disposisi. Staf penerima disposisi tidak
+        // butuh permission surat apa pun - mereka melihat surat yang
+        // didisposisikan kepadanya lewat menu Disposisi Saya, dan boleh
+        // meneruskannya ke bawahan (disposisi berjenjang).
+        Role::findOrCreate('Pimpinan', 'web')->syncPermissions([
+            'work.view', 'document.view', 'document.download',
+            'letter.view', 'letter.dispose', 'letter.confidential',
+        ]);
+
+        Role::findOrCreate('Staf', 'web')->syncPermissions([]);
 
         Role::findOrCreate('Viewer Internal', 'web')->syncPermissions([
             'work.view', 'document.view',
