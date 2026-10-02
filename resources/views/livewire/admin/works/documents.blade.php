@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\ReviewsReports;
 use App\Models\AuditLog;
 use App\Models\Document;
 use App\Models\DocumentFile;
@@ -7,6 +8,7 @@ use App\Models\DocumentFileVersion;
 use App\Models\Loan;
 use App\Models\Phase;
 use App\Models\Work;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
@@ -14,7 +16,7 @@ use Livewire\WithFileUploads;
 
 new #[Layout('layouts.app')] class extends Component
 {
-    use WithFileUploads;
+    use WithFileUploads, ReviewsReports;
 
     public Work $work;
 
@@ -25,6 +27,8 @@ new #[Layout('layouts.app')] class extends Component
     public string $description = '';
     public ?int $phaseId = null;
     public string $visibility = 'internal';
+    public string $category = 'umum';
+    public string $reportType = '';
 
     public ?string $confirmingDeleteDocumentId = null;
     public string $deleteDocumentError = '';
@@ -57,7 +61,7 @@ new #[Layout('layouts.app')] class extends Component
     public function with(): array
     {
         $documents = $this->work->documents()
-            ->with(['phase', 'files.currentVersion', 'files.versions.uploader'])
+            ->with(['phase', 'files.currentVersion.reviewer', 'files.versions.uploader', 'files.versions.reviews.user'])
             ->with(['loans' => fn ($q) => $q
                 ->where('requested_by', auth()->id())
                 ->whereIn('status', [Loan::STATUS_PENDING, Loan::STATUS_APPROVED])
@@ -66,6 +70,11 @@ new #[Layout('layouts.app')] class extends Component
             ->get();
 
         return ['documents' => $documents];
+    }
+
+    protected function scopeReviewableVersions(Builder $query): Builder
+    {
+        return $query->whereHas('documentFile.document', fn ($q) => $q->where('work_id', $this->work->id));
     }
 
     public function formatBytes(?int $bytes): string
@@ -89,8 +98,9 @@ new #[Layout('layouts.app')] class extends Component
     {
         abort_unless(auth()->user()->can('document.create'), 403);
 
-        $this->reset(['title', 'description', 'phaseId']);
+        $this->reset(['title', 'description', 'phaseId', 'reportType']);
         $this->visibility = 'internal';
+        $this->category = 'umum';
         $this->resetErrorBag();
         $this->showDocumentForm = true;
     }
@@ -108,13 +118,17 @@ new #[Layout('layouts.app')] class extends Component
             'title' => 'required|string|max:255',
             'phaseId' => 'nullable|exists:phases,id',
             'visibility' => 'required|in:public,internal,restricted,confidential',
-        ]);
+            'category' => 'required|in:umum,laporan',
+            'reportType' => ($this->category === 'laporan' ? 'required' : 'nullable') . '|in:' . implode(',', array_keys(Document::REPORT_TYPES)),
+        ], [], ['reportType' => 'jenis laporan']);
 
         $document = $this->work->documents()->create([
             'phase_id' => $this->phaseId,
             'title' => $this->title,
             'description' => $this->description !== '' ? $this->description : null,
             'visibility' => $this->visibility,
+            'category' => $this->category,
+            'report_type' => $this->category === 'laporan' ? $this->reportType : null,
             'created_by' => auth()->id(),
         ]);
 
@@ -227,6 +241,9 @@ new #[Layout('layouts.app')] class extends Component
             'checksum_sha256' => $checksum,
             'notes' => $this->uploadNotes !== '' ? $this->uploadNotes : null,
             'uploaded_by' => auth()->id(),
+            // Versi baru dari laporan selalu mulai sebagai draf, termasuk
+            // perbaikan setelah diminta revisi; penyusun mengajukannya lagi.
+            'review_status' => $documentFile->document->isReport() ? DocumentFileVersion::REVIEW_DRAFT : null,
         ]);
 
         $this->uploadingForFileId = null;
@@ -352,6 +369,11 @@ new #[Layout('layouts.app')] class extends Component
                     <div>
                         <div class="flex items-center gap-2 flex-wrap">
                             <h3 class="font-semibold text-gray-900">{{ $document->title }}</h3>
+                            @if ($document->isReport())
+                                <span class="text-[10px] font-semibold uppercase tracking-wide rounded px-1.5 py-0.5 bg-pu-gold-100 text-pu-navy-800">
+                                    {{ $document->reportTypeLabel() ?? 'Laporan' }}
+                                </span>
+                            @endif
                             @if ($document->phase)
                                 <span class="text-[10px] font-semibold uppercase tracking-wide rounded px-1.5 py-0.5 bg-gray-200 text-gray-600">
                                     {{ $document->phase->name }}
@@ -408,6 +430,9 @@ new #[Layout('layouts.app')] class extends Component
                                             {{ $file->currentVersion->original_filename }} &middot;
                                             {{ $this->formatBytes($file->currentVersion->size_bytes) }}
                                         </span>
+                                        @if ($document->isReport())
+                                            <span class="ms-2">@include('reports.status-badge', ['status' => $file->currentVersion->review_status])</span>
+                                        @endif
                                     @else
                                         <span class="text-xs text-gray-400 italic ms-2">belum ada versi diunggah</span>
                                     @endif
@@ -418,16 +443,35 @@ new #[Layout('layouts.app')] class extends Component
                                             <button type="button" wire:click="downloadVersion('{{ $file->currentVersion->id }}')" class="text-pu-navy-600 hover:underline">unduh</button>
                                         @endcan
                                     @endif
+                                    @if ($document->isReport() && $file->currentVersion)
+                                        @if ($file->currentVersion->review_status === 'draf')
+                                            @can('document.update')
+                                                <button type="button" wire:click="submitForReview('{{ $file->currentVersion->id }}')" class="text-sky-700 font-semibold hover:underline">ajukan review</button>
+                                            @endcan
+                                        @elseif ($file->currentVersion->review_status === 'menunggu_review')
+                                            @can('report.review')
+                                                <button type="button" wire:click="startReview('{{ $file->currentVersion->id }}', 'disetujui')" class="text-emerald-700 font-semibold hover:underline">setujui</button>
+                                                <button type="button" wire:click="startReview('{{ $file->currentVersion->id }}', 'revisi')" class="text-amber-700 font-semibold hover:underline">minta revisi</button>
+                                            @endcan
+                                        @endif
+                                    @endif
                                     @can('document.update')
-                                        <button type="button" wire:click="startUpload('{{ $file->id }}')" class="text-pu-navy-600 hover:underline">unggah versi baru</button>
+                                        <button type="button" wire:click="startUpload('{{ $file->id }}')" class="text-pu-navy-600 hover:underline">{{ $document->isReport() && $file->currentVersion?->review_status === 'revisi' ? 'unggah perbaikan' : 'unggah versi baru' }}</button>
                                     @endcan
-                                    @if ($file->versions->count() > 1)
+                                    @if ($file->versions->count() > 1 || ($document->isReport() && $file->versions->isNotEmpty()))
                                         <button type="button" wire:click="toggleFileHistory('{{ $file->id }}')" class="text-gray-500 hover:underline">
                                             {{ in_array($file->id, $expandedFileIds) ? 'sembunyikan riwayat' : 'riwayat (' . $file->versions->count() . ')' }}
                                         </button>
                                     @endif
                                 </div>
                             </div>
+
+                            @if ($document->isReport() && $file->currentVersion?->review_status === 'revisi' && $file->currentVersion->review_notes)
+                                <div class="mt-2 rounded-md bg-amber-50 border border-amber-200 px-3 py-2 text-sm">
+                                    <p class="text-xs text-amber-700 font-semibold">Catatan revisi dari {{ $file->currentVersion->reviewer?->name ?? '-' }} · {{ $file->currentVersion->reviewed_at?->format('d/m/Y H:i') }}</p>
+                                    <p class="text-gray-700 whitespace-pre-line mt-1">{{ $file->currentVersion->review_notes }}</p>
+                                </div>
+                            @endif
 
                             @if (in_array($file->id, $expandedFileIds))
                                 <table class="mt-3 min-w-full text-xs border border-gray-100 rounded">
@@ -437,6 +481,9 @@ new #[Layout('layouts.app')] class extends Component
                                             <th class="px-3 py-1.5 text-left font-medium text-gray-500 uppercase">Berkas</th>
                                             <th class="px-3 py-1.5 text-left font-medium text-gray-500 uppercase">Ukuran</th>
                                             <th class="px-3 py-1.5 text-left font-medium text-gray-500 uppercase">Diunggah</th>
+                                            @if ($document->isReport())
+                                                <th class="px-3 py-1.5 text-left font-medium text-gray-500 uppercase">Review</th>
+                                            @endif
                                             <th class="px-3 py-1.5 text-right font-medium text-gray-500 uppercase">Aksi</th>
                                         </tr>
                                     </thead>
@@ -451,7 +498,23 @@ new #[Layout('layouts.app')] class extends Component
                                                     @if ($version->uploader)
                                                         &middot; {{ $version->uploader->name }}
                                                     @endif
+                                                    @if ($version->notes)
+                                                        <p class="text-gray-400">{{ $version->notes }}</p>
+                                                    @endif
                                                 </td>
+                                                @if ($document->isReport())
+                                                    <td class="px-3 py-1.5 align-top">
+                                                        @include('reports.status-badge', ['status' => $version->review_status])
+                                                        @foreach ($version->reviews as $review)
+                                                            <p class="mt-1 text-gray-500">
+                                                                {{ $review->created_at->format('d/m/Y') }} · {{ $review->actionLabel() }} oleh {{ $review->user?->name ?? '-' }}
+                                                                @if ($review->notes)
+                                                                    <span class="block text-gray-600 whitespace-pre-line">"{{ $review->notes }}"</span>
+                                                                @endif
+                                                            </p>
+                                                        @endforeach
+                                                    </td>
+                                                @endif
                                                 <td class="px-3 py-1.5 text-right">
                                                     @can('document.download')
                                                         <button type="button" wire:click="downloadVersion('{{ $version->id }}')" class="text-pu-navy-600 hover:underline">unduh</button>
@@ -494,6 +557,28 @@ new #[Layout('layouts.app')] class extends Component
                     <div>
                         <x-input-label for="description" value="Deskripsi" />
                         <textarea wire:model="description" id="description" rows="2" class="mt-1 block w-full border-gray-300 focus:border-pu-navy-500 focus:ring-pu-navy-500 rounded-md shadow-sm"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <x-input-label for="category" value="Kategori" />
+                            <x-select-input wire:model.live="category" id="category" class="mt-1 block w-full">
+                                <option value="umum">Dokumen umum</option>
+                                <option value="laporan">Laporan (dengan review)</option>
+                            </x-select-input>
+                        </div>
+                        @if ($category === 'laporan')
+                            <div>
+                                <x-input-label for="reportType" value="Jenis Laporan" />
+                                <x-select-input wire:model="reportType" id="reportType" class="mt-1 block w-full">
+                                    <option value="">- Pilih -</option>
+                                    @foreach (\App\Models\Document::REPORT_TYPES as $value => $label)
+                                        <option value="{{ $value }}">{{ $label }}</option>
+                                    @endforeach
+                                </x-select-input>
+                                <x-input-error :messages="$errors->get('reportType')" class="mt-1" />
+                            </div>
+                        @endif
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
@@ -665,4 +750,5 @@ new #[Layout('layouts.app')] class extends Component
         </div>
     </div>
 @endif
+@include('reports.review-modal')
 </div>

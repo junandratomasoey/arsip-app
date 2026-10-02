@@ -26,8 +26,33 @@ class Document extends Model
 
     public const VISIBILITY_CONFIDENTIAL = 'confidential';
 
+    public const CATEGORY_GENERAL = 'umum';
+
+    public const CATEGORY_REPORT = 'laporan';
+
+    public const REPORT_TYPES = [
+        'rmk' => 'RMK / RMPK',
+        'pendahuluan' => 'Laporan Pendahuluan',
+        'antara' => 'Laporan Antara',
+        'akhir' => 'Laporan Akhir',
+        'bulanan' => 'Laporan Bulanan',
+        'mingguan' => 'Laporan Mingguan',
+        'harian' => 'Laporan Harian',
+        'lainnya' => 'Laporan Lainnya',
+    ];
+
+    public function isReport(): bool
+    {
+        return $this->category === self::CATEGORY_REPORT;
+    }
+
+    public function reportTypeLabel(): ?string
+    {
+        return $this->report_type ? (self::REPORT_TYPES[$this->report_type] ?? $this->report_type) : null;
+    }
+
     protected $fillable = [
-        'work_id', 'phase_id', 'title', 'description', 'visibility', 'status', 'created_by',
+        'work_id', 'phase_id', 'title', 'description', 'category', 'report_type', 'visibility', 'status', 'created_by',
         'physical_location_id', 'physical_code', 'physical_stored_at',
     ];
 

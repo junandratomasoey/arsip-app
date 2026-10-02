@@ -25,6 +25,7 @@ class RolePermissionSeeder extends Seeder
             'user.manage', 'organization.manage', 'settings.manage',
             'audit.view',
             'letter.view', 'letter.create', 'letter.update', 'letter.delete', 'letter.dispose', 'letter.confidential',
+            'report.review',
         ];
 
         foreach ($permissions as $permission) {
@@ -62,6 +63,7 @@ class RolePermissionSeeder extends Seeder
         Role::findOrCreate('Pimpinan', 'web')->syncPermissions([
             'work.view', 'document.view', 'document.download',
             'letter.view', 'letter.dispose', 'letter.confidential',
+            'report.review',
         ]);
 
         Role::findOrCreate('Staf', 'web')->syncPermissions([]);

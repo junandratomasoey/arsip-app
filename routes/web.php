@@ -89,6 +89,9 @@ Route::middleware(['auth', 'can:work.view'])->prefix('admin')->name('admin.')->g
 Route::middleware(['auth', 'can:document.view'])->prefix('admin')->name('admin.')->group(function () {
     Volt::route('works/{work}/documents', 'admin.works.documents')
         ->name('works.documents');
+
+    Volt::route('reports', 'admin.reports.index')
+        ->name('reports.index');
 });
 
 Route::middleware(['auth', 'can:archive.view'])->prefix('admin')->name('admin.')->group(function () {

@@ -25,6 +25,21 @@
             {{ __('Pekerjaan') }}
         </a>
 
+        @can('document.view')
+            @php
+                $pendingReviews = auth()->user()->can('report.review')
+                    ? \App\Models\DocumentFileVersion::where('review_status', 'menunggu_review')
+                        ->whereIn('id', \App\Models\DocumentFile::select('current_version_id'))->count()
+                    : 0;
+            @endphp
+            <a href="{{ route('admin.reports.index') }}" wire:navigate class="{{ $itemClasses(request()->routeIs('admin.reports.index')) }} justify-between">
+                <span>{{ __('Laporan & Revisi') }}</span>
+                @if ($pendingReviews > 0)
+                    <span class="ml-auto rounded-full bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 leading-none">{{ $pendingReviews }}</span>
+                @endif
+            </a>
+        @endcan
+
         @can('work.create')
             <a href="{{ route('admin.works.import') }}" wire:navigate class="{{ $itemClasses(request()->routeIs('admin.works.import')) }}">
                 {{ __('Impor Excel') }}

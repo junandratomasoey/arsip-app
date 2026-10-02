@@ -17,6 +17,8 @@ class DocumentResource extends JsonResource
             'phase' => $this->whenLoaded('phase', fn () => $this->phase?->name),
             'title' => $this->title,
             'description' => $this->description,
+            'category' => $this->category,
+            'report_type' => $this->report_type,
             'visibility' => $this->visibility,
             'status' => $this->status,
             'physical_location' => $this->whenLoaded('physicalLocation', fn () => $this->physicalLocation?->breadcrumbLabel()),

@@ -22,6 +22,7 @@ class DocumentFileResource extends JsonResource
                 'mime_type' => $version->mime_type,
                 'size_bytes' => $version->size_bytes,
                 'checksum_sha256' => $version->checksum_sha256,
+                'review_status' => $version->review_status,
                 'uploaded_at' => $version->created_at?->toIso8601String(),
                 'download_url' => route('api.v1.documents.files.download', [
                     'document' => $this->document_id,
