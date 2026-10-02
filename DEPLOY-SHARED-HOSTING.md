@@ -6,7 +6,7 @@ Target:
 |---|---|
 | Subdomain | `https://dokumen.bbwsnt2.com` |
 | Folder aplikasi (hasil clone GitHub) | `~/repositories/arsip-app` |
-| Document root subdomain | `~/repositories/arsip-app/public` |
+| Document root subdomain | `~/dokumen.bbwsnt2.com` (folder bawaan cPanel; isinya diisi otomatis oleh `deploy.sh`) |
 | Repo | `github.com/junandratomasoey/arsip-app`, branch `mysql-shared-hosting` |
 
 Alur kerja setelah ini: **ubah di laptop → `git push` → di server `git pull` + `bash deploy.sh`**.
@@ -65,14 +65,23 @@ Setelah selesai, buka **Manage** > tab **Basic Information** > pilih branch **`m
 
 ## 4. Subdomain
 
-cPanel > **Domains** > **Create A New Domain** (atau ubah yang sudah ada):
+Subdomain `dokumen.bbwsnt2.com` memakai document root bawaan cPanel `~/dokumen.bbwsnt2.com`.
+Kode Laravel tetap di `~/repositories/arsip-app` (di luar folder web, lebih aman);
+`deploy.sh` yang mengisi folder subdomain:
 
-- Domain: `dokumen.bbwsnt2.com`
-- **Uncheck** "Share document root"
-- Document Root: `repositories/arsip-app/public`
+- menyalin `build/`, `images/`, `.htaccess`, `.user.ini`, `favicon.ico`, `robots.txt` dari `public/`
+  (disalin ulang setiap deploy, jadi aset hasil `npm run build` selalu terbaru),
+- membuat `index.php` yang menunjuk ke `~/repositories/arsip-app`,
+- membuat symlink `storage` ke `storage/app/public` (gambar cover).
 
-Lalu cPanel > **SSL/TLS Status** > jalankan **AutoSSL** untuk subdomain ini.
-Pastikan versi PHP subdomain = 8.3 di **MultiPHP Manager**.
+Cukup tambahkan satu baris di `.env` (langkah 6):
+
+```dotenv
+DEPLOY_PUBLIC_DIR=/home/NAMAUSER/dokumen.bbwsnt2.com
+```
+
+Hapus/ganti nama `index.html` atau `default.html` bawaan cPanel di folder subdomain jika ada.
+Jalankan **AutoSSL** untuk subdomain dan set **PHP 8.3** di MultiPHP Manager.
 
 ## 5. Database
 
@@ -108,6 +117,8 @@ DB_PASSWORD=isi-password-database
 
 SESSION_SECURE_COOKIE=true
 SIARPU_AGENCY_CODE=BBWSNT2
+
+DEPLOY_PUBLIC_DIR=/home/NAMAUSER/dokumen.bbwsnt2.com
 ```
 
 `.env` tidak pernah masuk GitHub (sudah di `.gitignore`), jadi aman berisi password.
@@ -172,7 +183,9 @@ Untuk cron, ganti `php` dengan path yang sama.
 chmod -R ug+rwX storage bootstrap/cache
 ```
 
-**Gambar cover tidak tampil.** `public/storage` belum ada. Jalankan `php artisan storage:link`; jika hosting melarang symlink, minta admin hosting mengaktifkannya.
+**Gambar cover tidak tampil.** Cek `ls -la ~/dokumen.bbwsnt2.com/storage` harus berupa symlink ke `.../repositories/arsip-app/storage/app/public`. Jalankan ulang `bash deploy.sh`; jika hosting melarang symlink, minta admin hosting mengaktifkannya.
+
+**Halaman masih menampilkan halaman bawaan cPanel.** Hapus `index.html`/`default.html` di `~/dokumen.bbwsnt2.com`.
 
 **Upload berkas besar gagal.** `public/.user.ini` menaikkan batas ke 100MB. Jika diabaikan hosting, atur `upload_max_filesize=100M` dan `post_max_size=110M` di **MultiPHP INI Editor**.
 

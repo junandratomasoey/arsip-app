@@ -68,6 +68,59 @@ if [ ! -e public/storage ]; then
     "$PHP_BIN" artisan storage:link || echo "   (symlink gagal - buat manual, lihat panduan)"
 fi
 
+# ---------------------------------------------------------------------
+# Folder publik terpisah (mis. ~/dokumen.bbwsnt2.com sebagai document root
+# subdomain). Aktif bila .env berisi DEPLOY_PUBLIC_DIR=/home/USER/folder.
+# Isi public/ disalin ke sana setiap deploy (jadi aset hasil build selalu
+# ikut terbaru), index.php dibuat ulang agar menunjuk ke folder aplikasi ini,
+# dan storage/ dijadikan symlink ke storage/app/public (berkas cover upload).
+# ---------------------------------------------------------------------
+PUBLIC_DIR="$(grep -E '^DEPLOY_PUBLIC_DIR=' .env | tail -1 | cut -d= -f2- | tr -d '"' | tr -d "'" || true)"
+if [ -n "$PUBLIC_DIR" ]; then
+    echo "==> Menyalin folder public ke $PUBLIC_DIR"
+    mkdir -p "$PUBLIC_DIR"
+
+    for item in build images; do
+        rm -rf "${PUBLIC_DIR:?}/$item"
+        [ -e "public/$item" ] && cp -R "public/$item" "$PUBLIC_DIR/$item"
+    done
+    for file in .htaccess .user.ini favicon.ico robots.txt; do
+        [ -e "public/$file" ] && cp "public/$file" "$PUBLIC_DIR/$file"
+    done
+
+    # Hanya $APP_DIR yang diisi bash; sisanya ditulis apa adanya (kutip tunggal).
+    {
+        echo '<?php'
+        echo '// DIBUAT OTOMATIS oleh deploy.sh - jangan diedit, perubahan akan tertimpa.'
+        echo ''
+        echo 'use Illuminate\Http\Request;'
+        echo ''
+        echo "define('LARAVEL_START', microtime(true));"
+        echo ''
+        echo "\$appPath = '$APP_DIR';"
+        echo ''
+        echo 'if (file_exists($maintenance = $appPath.'"'"'/storage/framework/maintenance.php'"'"')) {'
+        echo '    require $maintenance;'
+        echo '}'
+        echo ''
+        echo 'require $appPath.'"'"'/vendor/autoload.php'"'"';'
+        echo ''
+        echo '$app = require_once $appPath.'"'"'/bootstrap/app.php'"'"';'
+        echo '$app->usePublicPath(__DIR__);'
+        echo ''
+        echo '$app->handleRequest(Request::capture());'
+    } > "$PUBLIC_DIR/index.php"
+
+    if [ ! -L "$PUBLIC_DIR/storage" ]; then
+        rm -rf "${PUBLIC_DIR:?}/storage"
+        ln -s "$APP_DIR/storage/app/public" "$PUBLIC_DIR/storage"
+    fi
+
+    if [ -f "$PUBLIC_DIR/index.html" ]; then
+        echo "   !! Ada $PUBLIC_DIR/index.html (halaman bawaan cPanel). Hapus/ganti nama agar index.php yang dipakai."
+    fi
+fi
+
 echo "==> Cache konfigurasi, route, view"
 "$PHP_BIN" artisan optimize:clear
 "$PHP_BIN" artisan config:cache
