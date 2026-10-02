@@ -1,0 +1,7 @@
+---
+# Dipakai menu cPanel > Git Version Control > "Deploy HEAD Commit".
+# Repo ini sendiri adalah folder aplikasinya (document root subdomain
+# mengarah ke public/), jadi deploy cukup menjalankan deploy.sh.
+deployment:
+  tasks:
+    - /bin/bash deploy.sh
