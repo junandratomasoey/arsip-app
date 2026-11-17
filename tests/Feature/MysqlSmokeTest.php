@@ -114,6 +114,35 @@ class MysqlSmokeTest extends TestCase
         $this->assertSame(1, Work::where('name', 'like', '%BENDUNGAN uji%')->count());
     }
 
+    public function test_archive_completeness_on_works_list_and_dashboard(): void
+    {
+        $this->withoutVite();
+        ['work' => $work, 'document' => $document, 'physical' => $physical] = $this->sampleData();
+
+        // Dokumen contoh belum punya berkas maupun lokasi fisik.
+        $this->assertSame(1, Document::where('work_id', $work->id)->withoutSoftfile()->withoutHardcopy()->count());
+
+        $both = Document::create(['work_id' => $work->id, 'title' => 'Lengkap Smoke', 'visibility' => 'internal', 'status' => 'active', 'physical_location_id' => $physical->id]);
+        $file = $both->files()->create(['label' => 'Berkas']);
+        $file->addVersion(['disk' => 'local', 'path' => 'x/y.pdf', 'original_filename' => 'y.pdf', 'mime_type' => 'application/pdf', 'size_bytes' => 10, 'checksum_sha256' => str_repeat('a', 64)]);
+
+        // Slot berkas tanpa unggahan tidak dihitung sebagai softfile.
+        $document->files()->create(['label' => 'Slot kosong']);
+
+        $this->assertSame(1, Document::where('work_id', $work->id)->withSoftfile()->count());
+        $this->assertSame(1, Document::where('work_id', $work->id)->withHardcopy()->count());
+        $this->assertSame(1, Document::where('work_id', $work->id)->withoutSoftfile()->count());
+
+        $empty = Work::create(['code' => 'SMK-009', 'name' => 'Pekerjaan Tanpa Dokumen Smoke']);
+
+        $this->actingAs($this->admin());
+        $this->get('/admin/works')->assertOk()->assertSee('Softfile 1/2')->assertSee('Hardcopy 1/2')->assertSee('Belum ada dokumen');
+        $this->get('/admin/works?kelengkapan=softfile')->assertOk()->assertSee('Bendungan Uji Smoke')->assertDontSee('Pekerjaan Tanpa Dokumen Smoke');
+        $this->get('/admin/works?kelengkapan=hardcopy')->assertOk()->assertSee('Bendungan Uji Smoke');
+        $this->get('/admin/works?kelengkapan=kosong')->assertOk()->assertSee('Pekerjaan Tanpa Dokumen Smoke')->assertDontSee('Bendungan Uji Smoke');
+        $this->get('/dashboard')->assertOk()->assertSee('Kelengkapan Arsip')->assertSee('Tanpa softfile')->assertSee('Tanpa hardcopy');
+    }
+
     public function test_work_location_helpers_on_mysql(): void
     {
         ['work' => $work, 'location' => $location] = $this->sampleData();

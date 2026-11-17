@@ -72,6 +72,35 @@ new #[Layout('layouts.app')] class extends Component
             ];
         }
 
+        // --- Kelengkapan arsip (softfile & hardcopy) ------------------------
+        // Softfile = dokumen punya berkas terunggah; hardcopy = dokumen
+        // sudah ditempatkan di lokasi Arsip Fisik (lihat scope di Document).
+        $completeness = null;
+        if ($user->can('document.view')) {
+            $canOpenWorks = $user->can('work.view');
+            $totalDocuments = Document::count();
+            $tile = fn (string $label, $documents, $works, ?string $filter, string $tone) => [
+                'label' => $label,
+                'documents' => (clone $documents)->count(),
+                'works' => $works->count(),
+                'url' => $canOpenWorks && $filter ? route('admin.works.index', ['kelengkapan' => $filter]) : null,
+                'tone' => $tone,
+                'fullWorks' => $tone === 'emerald',
+            ];
+
+            $completeness = [
+                'total' => $totalDocuments,
+                'tiles' => [
+                    $tile('Tanpa softfile', Document::withoutSoftfile(), Work::whereHas('documents', fn ($d) => $d->withoutSoftfile()), 'softfile', 'amber'),
+                    $tile('Tanpa hardcopy', Document::withoutHardcopy(), Work::whereHas('documents', fn ($d) => $d->withoutHardcopy()), 'hardcopy', 'amber'),
+                    $tile('Tanpa keduanya', Document::withoutSoftfile()->withoutHardcopy(), Work::whereHas('documents', fn ($d) => $d->withoutSoftfile()->withoutHardcopy()), null, 'red'),
+                    $tile('Lengkap (softfile + hardcopy)', Document::withSoftfile()->withHardcopy(), Work::whereHas('documents')->whereDoesntHave('documents', fn ($d) => $d->where(fn ($x) => $x->withoutSoftfile()->orWhere(fn ($y) => $y->withoutHardcopy()))), null, 'emerald'),
+                ],
+                'worksWithoutDocuments' => Work::doesntHave('documents')->count(),
+                'emptyUrl' => $canOpenWorks ? route('admin.works.index', ['kelengkapan' => 'kosong']) : null,
+            ];
+        }
+
         // --- Kotak "Perlu perhatian Anda" ---------------------------------
         $myDispositions = LetterDisposition::query()
             ->with(['letter', 'fromUser'])
@@ -138,6 +167,7 @@ new #[Layout('layouts.app')] class extends Component
             'monthly' => $monthly,
             'monthlyMax' => $monthly ? max(1, $monthly->max(fn ($m) => max($m['in'], $m['out']))) : 1,
             'reportSummary' => $reportSummary,
+            'completeness' => $completeness,
             'recentWorks' => $user->can('work.view') ? Work::with('workStatus')->latest()->limit(5)->get() : collect(),
             'activities' => $user->can('audit.view') ? AuditLog::with('user')->latest()->limit(8)->get() : collect(),
         ];
@@ -220,6 +250,46 @@ new #[Layout('layouts.app')] class extends Component
                         <p class="mt-1 text-xs text-gray-500">{{ $stat['hint'] }}</p>
                     </a>
                 @endforeach
+            </section>
+        @endif
+
+        {{-- Kelengkapan arsip: softfile & hardcopy --}}
+        @if ($completeness)
+            <section class="rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-5 py-4">
+                    <div>
+                        <h3 class="font-semibold text-gray-900">Kelengkapan Arsip</h3>
+                        <p class="text-xs text-gray-500 mt-0.5">Dari {{ number_format($completeness['total'], 0, ',', '.') }} dokumen. Softfile = berkas sudah diunggah, hardcopy = sudah ditempatkan di Arsip Fisik.</p>
+                    </div>
+                    @if ($completeness['worksWithoutDocuments'] > 0)
+                        @if ($completeness['emptyUrl'])
+                            <a href="{{ $completeness['emptyUrl'] }}" wire:navigate class="text-xs text-pu-navy-600 hover:underline">{{ $completeness['worksWithoutDocuments'] }} pekerjaan belum punya dokumen &rarr;</a>
+                        @else
+                            <span class="text-xs text-gray-500">{{ $completeness['worksWithoutDocuments'] }} pekerjaan belum punya dokumen</span>
+                        @endif
+                    @endif
+                </div>
+                <div class="grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-gray-100">
+                    @foreach ($completeness['tiles'] as $t)
+                        <{{ $t['url'] ? 'a' : 'div' }} @if ($t['url']) href="{{ $t['url'] }}" wire:navigate @endif class="block px-5 py-4 {{ $t['url'] ? 'hover:bg-gray-50' : '' }}">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">{{ $t['label'] }}</p>
+                            <p @class([
+                                'mt-2 text-3xl font-semibold tabular-nums',
+                                'text-amber-600' => $t['tone'] === 'amber' && $t['documents'] > 0,
+                                'text-red-600' => $t['tone'] === 'red' && $t['documents'] > 0,
+                                'text-emerald-600' => $t['tone'] === 'emerald' && $t['documents'] > 0,
+                                'text-gray-400' => $t['documents'] === 0,
+                            ])>{{ number_format($t['documents'], 0, ',', '.') }}</p>
+                            <p class="mt-1 text-xs text-gray-500">
+                                @if ($t['fullWorks'])
+                                    dokumen; {{ $t['works'] }} pekerjaan lengkap seluruhnya
+                                @else
+                                    dokumen, di {{ $t['works'] }} pekerjaan
+                                @endif
+                            </p>
+                        </{{ $t['url'] ? 'a' : 'div' }}>
+                    @endforeach
+                </div>
             </section>
         @endif
 

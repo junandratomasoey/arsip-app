@@ -5,6 +5,7 @@ use App\Models\OrganizationalUnit;
 use App\Models\Work;
 use App\Models\WorkStatus;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Url;
 use Livewire\Volt\Component;
 use Livewire\WithPagination;
 
@@ -16,6 +17,12 @@ new #[Layout('layouts.app')] class extends Component
     public ?int $filterSatkerId = null;
     public ?int $filterStatusId = null;
     public ?int $filterFiscalYear = null;
+
+    // '' = semua, 'softfile' = ada dokumen tanpa softfile,
+    // 'hardcopy' = ada dokumen tanpa hardcopy, 'kosong' = belum ada dokumen.
+    // Lewat URL supaya kartu di Dashboard bisa menaut langsung ke sini.
+    #[Url(as: 'kelengkapan')]
+    public string $filterCompleteness = '';
 
     public array $satkerOptions = [];
     public array $statusOptions = [];
@@ -41,6 +48,11 @@ new #[Layout('layouts.app')] class extends Component
         $this->resetPage();
     }
 
+    public function updatingFilterCompleteness(): void
+    {
+        $this->resetPage();
+    }
+
     public function updatingFilterSatkerId(): void
     {
         $this->resetPage();
@@ -60,12 +72,20 @@ new #[Layout('layouts.app')] class extends Component
     {
         $works = Work::query()
             ->with(['workType', 'workStatus', 'satkerUnit', 'ppkUnit'])
+            ->withCount([
+                'documents',
+                'documents as softfile_count' => fn ($d) => $d->withSoftfile(),
+                'documents as hardcopy_count' => fn ($d) => $d->withHardcopy(),
+            ])
             ->when($this->search, fn ($q) => $q->where(fn ($q2) => $q2
                 ->where('code', 'like', "%{$this->search}%")
                 ->orWhere('name', 'like', "%{$this->search}%")))
             ->when($this->filterSatkerId, fn ($q) => $q->where('satker_unit_id', $this->filterSatkerId))
             ->when($this->filterStatusId, fn ($q) => $q->where('work_status_id', $this->filterStatusId))
             ->when($this->filterFiscalYear, fn ($q) => $q->where('fiscal_year', $this->filterFiscalYear))
+            ->when($this->filterCompleteness === 'softfile', fn ($q) => $q->whereHas('documents', fn ($d) => $d->withoutSoftfile()))
+            ->when($this->filterCompleteness === 'hardcopy', fn ($q) => $q->whereHas('documents', fn ($d) => $d->withoutHardcopy()))
+            ->when($this->filterCompleteness === 'kosong', fn ($q) => $q->doesntHave('documents'))
             ->orderByDesc('created_at')
             ->paginate(15);
 
@@ -165,6 +185,16 @@ new #[Layout('layouts.app')] class extends Component
                     @endforeach
                 </x-select-input>
             </div>
+
+            <div>
+                <x-input-label for="filterCompleteness" value="Kelengkapan Arsip" />
+                <x-select-input wire:model.live="filterCompleteness" id="filterCompleteness" class="mt-1 block w-full">
+                    <option value="">Semua</option>
+                    <option value="softfile">Ada dokumen tanpa softfile</option>
+                    <option value="hardcopy">Ada dokumen tanpa hardcopy</option>
+                    <option value="kosong">Belum ada dokumen</option>
+                </x-select-input>
+            </div>
         </div>
 
         <div class="bg-white shadow-sm sm:rounded-lg overflow-hidden overflow-x-auto">
@@ -178,6 +208,7 @@ new #[Layout('layouts.app')] class extends Component
                         <th class="px-4 py-2 text-left font-medium text-gray-500 uppercase text-xs">Satker</th>
                         <th class="px-4 py-2 text-left font-medium text-gray-500 uppercase text-xs">PPK</th>
                         <th class="px-4 py-2 text-left font-medium text-gray-500 uppercase text-xs">Tahun</th>
+                        <th class="px-4 py-2 text-left font-medium text-gray-500 uppercase text-xs">Kelengkapan Arsip</th>
                         <th class="px-4 py-2 text-left font-medium text-gray-500 uppercase text-xs">Status</th>
                         <th class="px-4 py-2 text-right font-medium text-gray-500 uppercase text-xs">Aksi</th>
                     </tr>
@@ -204,6 +235,27 @@ new #[Layout('layouts.app')] class extends Component
                             <td class="px-4 py-2 text-gray-500 whitespace-nowrap">{{ $work->ppkUnit?->name ?? '-' }}</td>
                             <td class="px-4 py-2 text-gray-500 whitespace-nowrap">{{ $work->fiscal_year ?? '-' }}</td>
                             <td class="px-4 py-2 whitespace-nowrap">
+                                @if ($work->documents_count === 0)
+                                    <span class="text-xs text-gray-400 italic">Belum ada dokumen</span>
+                                @else
+                                    <div class="flex flex-col gap-1">
+                                        @foreach (['Softfile' => $work->softfile_count, 'Hardcopy' => $work->hardcopy_count] as $label => $have)
+                                            <span
+                                                @class([
+                                                    'inline-flex w-fit items-center gap-1 text-[11px] font-medium rounded px-1.5 py-0.5',
+                                                    'bg-emerald-100 text-emerald-700' => $have === $work->documents_count,
+                                                    'bg-amber-100 text-amber-700' => $have > 0 && $have < $work->documents_count,
+                                                    'bg-red-100 text-red-700' => $have === 0,
+                                                ])
+                                                title="{{ $have }} dari {{ $work->documents_count }} dokumen punya {{ strtolower($label) }}"
+                                            >
+                                                {{ $label }} {{ $have }}/{{ $work->documents_count }}
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                @endif
+                            </td>
+                            <td class="px-4 py-2 whitespace-nowrap">
                                 @if ($work->workStatus)
                                     <span class="text-[10px] font-semibold uppercase tracking-wide rounded px-1.5 py-0.5 bg-pu-navy-100 text-pu-navy-700">
                                         {{ $work->workStatus->name }}
@@ -227,7 +279,7 @@ new #[Layout('layouts.app')] class extends Component
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="px-4 py-6 text-center text-gray-400 italic">Belum ada data pekerjaan.</td>
+                            <td colspan="10" class="px-4 py-6 text-center text-gray-400 italic">Belum ada data pekerjaan.</td>
                         </tr>
                     @endforelse
                 </tbody>

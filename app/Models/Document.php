@@ -102,4 +102,31 @@ class Document extends Model
     {
         return $query->where('visibility', self::VISIBILITY_PUBLIC);
     }
+
+    /*
+     * Kelengkapan arsip per dokumen:
+     *  - softfile = minimal satu slot berkas yang sudah ada unggahannya;
+     *  - hardcopy = dokumen sudah ditempatkan di lokasi Arsip Fisik.
+     * Keduanya diturunkan dari data yang sudah ada (tidak diisi manual),
+     * supaya angkanya selalu mengikuti kondisi nyata.
+     */
+    public function scopeWithSoftfile($query)
+    {
+        return $query->whereHas('files', fn ($f) => $f->whereNotNull('current_version_id'));
+    }
+
+    public function scopeWithoutSoftfile($query)
+    {
+        return $query->whereDoesntHave('files', fn ($f) => $f->whereNotNull('current_version_id'));
+    }
+
+    public function scopeWithHardcopy($query)
+    {
+        return $query->whereNotNull('physical_location_id');
+    }
+
+    public function scopeWithoutHardcopy($query)
+    {
+        return $query->whereNull('physical_location_id');
+    }
 }
