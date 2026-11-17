@@ -48,7 +48,9 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // Berkas dokumen privat hanya diunduh lewat route yang dicek
+            // izinnya, tidak pernah lewat URL /storage.
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],
@@ -58,6 +60,12 @@ return [
             'root' => storage_path('app/public'),
             'url' => env('APP_URL').'/storage',
             'visibility' => 'public',
+            // Cadangan bila symlink public/storage tidak ada atau tidak
+            // diikuti web server (umum di shared hosting): Laravel sendiri
+            // yang melayani /storage/{path} dari disk ini. Bila symlink
+            // berfungsi, web server melayani berkasnya langsung dan route
+            // ini tidak pernah terpanggil.
+            'serve' => true,
             'throw' => false,
             'report' => false,
         ],
