@@ -185,7 +185,12 @@ new #[Layout('layouts.app')] class extends Component
                     @forelse ($works as $work)
                         <tr>
                             <td class="px-4 py-2 text-gray-500 whitespace-nowrap">{{ $work->code }}</td>
-                            <td class="px-4 py-2 text-gray-900">{{ $work->name }}</td>
+                            <td class="px-4 py-2 text-gray-900">
+                                {{ $work->name }}
+                                @if ($work->isPublic())
+                                    <span class="ml-1 align-middle text-[10px] font-semibold uppercase tracking-wide rounded px-1.5 py-0.5 bg-emerald-100 text-emerald-700" title="Tampil di Perpustakaan Publik">Publik</span>
+                                @endif
+                            </td>
                             <td class="px-4 py-2 text-gray-500 whitespace-nowrap">{{ $work->workType?->name ?? '-' }}</td>
                             <td class="px-4 py-2 text-gray-500 whitespace-nowrap">{{ $work->satkerUnit?->name ?? '-' }}</td>
                             <td class="px-4 py-2 text-gray-500 whitespace-nowrap">{{ $work->ppkUnit?->name ?? '-' }}</td>

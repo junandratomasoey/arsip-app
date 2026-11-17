@@ -24,6 +24,7 @@ new #[Layout('layouts.app')] class extends Component
     public $coverUpload = null;
     public ?string $existingCoverPath = null;
     public bool $removeCover = false;
+    public string $visibility = Work::VISIBILITY_INTERNAL;
     public ?int $workTypeId = null;
     public ?int $fiscalYear = null;
     public string $fundingSource = '';
@@ -77,6 +78,7 @@ new #[Layout('layouts.app')] class extends Component
             $this->name = $this->work->name;
             $this->packageName = (string) $this->work->package_name;
             $this->existingCoverPath = $this->work->cover_path;
+            $this->visibility = $this->work->visibility ?? Work::VISIBILITY_INTERNAL;
             $this->workTypeId = $this->work->work_type_id;
             $this->fiscalYear = $this->work->fiscal_year;
             $this->fundingSource = (string) $this->work->funding_source;
@@ -153,6 +155,7 @@ new #[Layout('layouts.app')] class extends Component
             'code' => 'required|string|max:255|unique:works,code,' . ($this->work?->id ?? 'NULL') . ',id',
             'name' => 'required|string|max:255',
             'coverUpload' => 'nullable|image|max:2048',
+            'visibility' => 'required|in:' . implode(',', array_keys(Work::VISIBILITIES)),
             'workTypeId' => 'nullable|exists:work_types,id',
             'fiscalYear' => 'nullable|integer|min:2000|max:2100',
             'contractDate' => 'nullable|date',
@@ -187,6 +190,7 @@ new #[Layout('layouts.app')] class extends Component
             'name' => $this->name,
             'package_name' => $this->packageName !== '' ? $this->packageName : null,
             'cover_path' => $coverPath,
+            'visibility' => $this->visibility,
             'work_type_id' => $this->workTypeId,
             'fiscal_year' => $this->fiscalYear,
             'funding_source' => $this->fundingSource !== '' ? $this->fundingSource : null,
@@ -270,6 +274,16 @@ new #[Layout('layouts.app')] class extends Component
                     <div class="sm:col-span-2">
                         <x-input-label for="packageName" value="Nama Paket" />
                         <x-text-input wire:model="packageName" id="packageName" type="text" class="mt-1 block w-full" />
+                    </div>
+                    <div class="sm:col-span-2">
+                        <x-input-label for="visibility" value="Visibilitas *" />
+                        <x-select-input wire:model="visibility" id="visibility" class="mt-1 block w-full sm:w-1/2">
+                            @foreach (\App\Models\Work::VISIBILITIES as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </x-select-input>
+                        <p class="text-xs text-gray-400 mt-1">Pekerjaan "Publik" tampil di Perpustakaan Digital Publik (/pustaka). Yang terlihat umum hanya dokumen yang visibilitasnya juga Publik.</p>
+                        <x-input-error :messages="$errors->get('visibility')" class="mt-1" />
                     </div>
                     <div class="sm:col-span-2">
                         <x-input-label for="coverUpload" value="Cover / Sampul" />

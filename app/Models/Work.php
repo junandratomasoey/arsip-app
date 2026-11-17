@@ -20,8 +20,19 @@ class Work extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
+    /** Tampil di Perpustakaan Digital Publik (/pustaka). */
+    public const VISIBILITY_PUBLIC = 'public';
+
+    /** Hanya untuk pengguna yang login (default). */
+    public const VISIBILITY_INTERNAL = 'internal';
+
+    public const VISIBILITIES = [
+        self::VISIBILITY_INTERNAL => 'Internal - tidak tampil di Perpustakaan Publik',
+        self::VISIBILITY_PUBLIC => 'Publik - tampil di Perpustakaan Publik',
+    ];
+
     protected $fillable = [
-        'code', 'name', 'package_name', 'cover_path', 'work_type_id', 'fiscal_year', 'funding_source',
+        'code', 'name', 'package_name', 'cover_path', 'visibility', 'work_type_id', 'fiscal_year', 'funding_source',
         'province', 'regency', 'district', 'village', 'location_description',
         'contract_number', 'contract_date', 'contract_value',
         'spmk_number', 'spmk_date', 'bast_number', 'bast_date',
@@ -88,9 +99,34 @@ class Work extends Model
         return $this->hasMany(Document::class);
     }
 
+    /**
+     * Dokumen yang boleh dilihat tanpa login. Dipakai Perpustakaan Digital
+     * Publik supaya aturan "publik" hanya ditulis di satu tempat.
+     */
+    public function publicDocuments(): HasMany
+    {
+        return $this->documents()->where('visibility', Document::VISIBILITY_PUBLIC);
+    }
+
     public function tags(): MorphToMany
     {
         return $this->morphToMany(Tag::class, 'taggable');
+    }
+
+    /**
+     * Pekerjaan yang dipilih tampil di Perpustakaan Digital Publik lewat
+     * kolom Visibilitas di form Pekerjaan. Pekerjaan non-publik tidak
+     * terlihat sama sekali di halaman publik - termasuk dokumennya,
+     * walaupun dokumen itu sendiri bervisibilitas publik.
+     */
+    public function scopePublic($query)
+    {
+        return $query->where('visibility', self::VISIBILITY_PUBLIC);
+    }
+
+    public function isPublic(): bool
+    {
+        return $this->visibility === self::VISIBILITY_PUBLIC;
     }
 
     /**

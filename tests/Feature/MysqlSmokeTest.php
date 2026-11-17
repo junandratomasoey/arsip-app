@@ -39,7 +39,7 @@ class MysqlSmokeTest extends TestCase
 
     private function sampleData(): array
     {
-        $work = Work::create(['code' => 'SMK-001', 'name' => 'Bendungan Uji Smoke', 'fiscal_year' => 2026]);
+        $work = Work::create(['code' => 'SMK-001', 'name' => 'Bendungan Uji Smoke', 'fiscal_year' => 2026, 'visibility' => 'public']);
         $document = Document::create([
             'work_id' => $work->id, 'title' => 'Laporan Uji Smoke', 'visibility' => 'public', 'status' => 'active',
         ]);
@@ -76,8 +76,39 @@ class MysqlSmokeTest extends TestCase
         ['document' => $document] = $this->sampleData();
 
         $this->get('/')->assertOk();
-        $this->get('/pustaka')->assertOk()->assertSee('Laporan Uji Smoke');
+        // /pustaka menampilkan pekerjaan; dokumen publiknya ada di halaman pekerjaan.
+        $this->get('/pustaka')->assertOk()->assertSee('Bendungan Uji Smoke');
+        $this->get('/pustaka?q=Laporan+Uji')->assertOk()->assertSee('Bendungan Uji Smoke')->assertSee('Laporan Uji Smoke');
+        $this->get("/pustaka/pekerjaan/{$document->work_id}")->assertOk()->assertSee('Laporan Uji Smoke');
         $this->get("/pustaka/{$document->id}")->assertOk();
+
+        // Pekerjaan internal (default) tidak boleh muncul sama sekali -
+        // termasuk dokumennya yang bervisibilitas publik - dan dokumen
+        // non-publik tidak boleh bocor di halaman pekerjaan publik.
+        $hidden = Work::create(['code' => 'SMK-002', 'name' => 'Embung Tertutup Smoke', 'fiscal_year' => 2026]);
+        $this->assertSame('internal', $hidden->fresh()->visibility);
+        $leak = Document::create(['work_id' => $hidden->id, 'title' => 'Dokumen Publik Smoke Tertutup', 'visibility' => 'public', 'status' => 'active']);
+        Document::create(['work_id' => $document->work_id, 'title' => 'Nota Internal Smoke', 'visibility' => 'internal', 'status' => 'active']);
+
+        $this->get('/pustaka')->assertOk()->assertDontSee('Embung Tertutup Smoke');
+        $this->get('/pustaka?q=Smoke+Tertutup')->assertOk()->assertDontSee('Embung Tertutup Smoke');
+        $this->get("/pustaka/pekerjaan/{$hidden->id}")->assertNotFound();
+        $this->get("/pustaka/{$leak->id}")->assertNotFound();
+        $this->get("/pustaka/pekerjaan/{$document->work_id}")->assertOk()->assertDontSee('Nota Internal Smoke');
+
+        // Pekerjaan publik tanpa dokumen publik tetap tampil (kosong).
+        $empty = Work::create(['code' => 'SMK-003', 'name' => 'Irigasi Kosong Smoke', 'visibility' => 'public']);
+        $this->get('/pustaka')->assertOk()->assertSee('Irigasi Kosong Smoke');
+        $this->get("/pustaka/pekerjaan/{$empty->id}")->assertOk()->assertSee('Belum ada dokumen yang dipublikasikan');
+
+        // Form pekerjaan menyimpan pilihan visibilitas.
+        $this->actingAs($this->admin());
+        \Livewire\Volt\Volt::test('admin.works.form', ['work' => $hidden])
+            ->assertSet('visibility', 'internal')
+            ->set('visibility', 'public')
+            ->call('save')
+            ->assertHasNoErrors();
+        $this->assertSame('public', $hidden->fresh()->visibility);
 
         // Pencarian case-insensitive: dulu 'ilike' (PostgreSQL), sekarang 'like' + collation *_ci.
         $this->assertSame(1, Work::where('name', 'like', '%BENDUNGAN uji%')->count());

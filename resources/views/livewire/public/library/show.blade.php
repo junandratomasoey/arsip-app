@@ -22,7 +22,8 @@ new #[Layout('layouts.public')] class extends Component
 
     public function mount(Document $document): void
     {
-        abort_unless($document->visibility === Document::VISIBILITY_PUBLIC, 404);
+        // Dokumen publik hanya terbuka bila pekerjaannya juga publik.
+        abort_unless($document->visibility === Document::VISIBILITY_PUBLIC && $document->work?->isPublic(), 404);
 
         $this->document = $document;
     }
@@ -107,7 +108,7 @@ new #[Layout('layouts.public')] class extends Component
 
 <div class="space-y-6">
     <div>
-        <a href="{{ route('public.library.index') }}" wire:navigate class="text-sm text-gray-500 hover:text-gray-700">&larr; Kembali ke Perpustakaan</a>
+        <a href="{{ route('public.library.work', $document->work) }}" wire:navigate class="text-sm text-gray-500 hover:text-gray-700">&larr; Kembali ke {{ $document->work->name }}</a>
     </div>
 
     @if (session('status'))
@@ -136,7 +137,9 @@ new #[Layout('layouts.public')] class extends Component
         <dl class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
             <div>
                 <dt class="text-gray-400">Pekerjaan</dt>
-                <dd class="text-gray-800">{{ $document->work->code }} - {{ $document->work->name }}</dd>
+                <dd>
+                    <a href="{{ route('public.library.work', $document->work) }}" wire:navigate class="text-pu-navy-600 hover:underline">{{ $document->work->code }} - {{ $document->work->name }}</a>
+                </dd>
             </div>
             @if ($document->work->workType)
                 <div>
