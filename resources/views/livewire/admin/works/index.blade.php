@@ -171,6 +171,7 @@ new #[Layout('layouts.app')] class extends Component
             <table class="min-w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50">
                     <tr>
+                        <th class="px-4 py-2 text-left font-medium text-gray-500 uppercase text-xs">Cover</th>
                         <th class="px-4 py-2 text-left font-medium text-gray-500 uppercase text-xs">Kode</th>
                         <th class="px-4 py-2 text-left font-medium text-gray-500 uppercase text-xs">Nama Pekerjaan</th>
                         <th class="px-4 py-2 text-left font-medium text-gray-500 uppercase text-xs">Jenis</th>
@@ -184,6 +185,13 @@ new #[Layout('layouts.app')] class extends Component
                 <tbody class="divide-y divide-gray-100">
                     @forelse ($works as $work)
                         <tr>
+                            <td class="px-4 py-2">
+                                @if ($work->coverUrl())
+                                    <img src="{{ $work->coverUrl() }}" alt="" loading="lazy" class="h-12 w-12 rounded-md object-cover border border-gray-200">
+                                @else
+                                    <div class="h-12 w-12 rounded-md bg-gray-100 border border-gray-200 flex items-center justify-center text-[10px] text-gray-400" title="Belum ada cover">-</div>
+                                @endif
+                            </td>
                             <td class="px-4 py-2 text-gray-500 whitespace-nowrap">{{ $work->code }}</td>
                             <td class="px-4 py-2 text-gray-900">
                                 {{ $work->name }}
@@ -219,7 +227,7 @@ new #[Layout('layouts.app')] class extends Component
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-4 py-6 text-center text-gray-400 italic">Belum ada data pekerjaan.</td>
+                            <td colspan="9" class="px-4 py-6 text-center text-gray-400 italic">Belum ada data pekerjaan.</td>
                         </tr>
                     @endforelse
                 </tbody>
