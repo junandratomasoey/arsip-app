@@ -17,7 +17,7 @@
     <body class="font-sans antialiased bg-gray-50 text-gray-900">
         <div class="min-h-screen flex flex-col">
             <header class="bg-white border-b border-gray-200">
-                <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4">
                     <a href="{{ route('public.library.index') }}" wire:navigate class="flex items-baseline gap-2">
                         <span class="font-semibold text-gray-800">Perpustakaan Digital Arsip Pekerjaan</span>
                         <span class="hidden sm:inline text-xs text-gray-400">BBWS Nusa Tenggara II</span>
@@ -30,14 +30,14 @@
 
             @if (isset($header))
                 <div class="bg-white border-b border-gray-100">
-                    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                         {{ $header }}
                     </div>
                 </div>
             @endif
 
             <main class="flex-1">
-                <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     {{ $slot }}
                 </div>
             </main>

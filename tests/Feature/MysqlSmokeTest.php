@@ -101,6 +101,15 @@ class MysqlSmokeTest extends TestCase
         $this->get('/pustaka')->assertOk()->assertSee('Irigasi Kosong Smoke');
         $this->get("/pustaka/pekerjaan/{$empty->id}")->assertOk()->assertSee('Belum ada dokumen yang dipublikasikan');
 
+        // Filter publik: tahun, lokasi, dan pilihan filter tidak membocorkan
+        // nilai milik pekerjaan internal.
+        Work::create(['code' => 'SMK-004', 'name' => 'Pantai Publik Smoke', 'fiscal_year' => 2021, 'regency' => 'Kota Smoke', 'visibility' => 'public']);
+        Work::create(['code' => 'SMK-005', 'name' => 'Pantai Internal Smoke', 'fiscal_year' => 1999, 'regency' => 'Kabupaten Rahasia Smoke']);
+        $this->get('/pustaka?tahun=2021')->assertOk()->assertSee('Pantai Publik Smoke')->assertDontSee('Bendungan Uji Smoke');
+        $this->get('/pustaka?lokasi=Kota+Smoke')->assertOk()->assertSee('Pantai Publik Smoke')->assertDontSee('Irigasi Kosong Smoke');
+        $this->get('/pustaka?urut=nama')->assertOk()->assertSeeInOrder(['Bendungan Uji Smoke', 'Pantai Publik Smoke']);
+        $this->get('/pustaka')->assertOk()->assertDontSee('Kabupaten Rahasia Smoke')->assertDontSee('1999');
+
         // Form pekerjaan menyimpan pilihan visibilitas.
         $this->actingAs($this->admin());
         \Livewire\Volt\Volt::test('admin.works.form', ['work' => $hidden])
